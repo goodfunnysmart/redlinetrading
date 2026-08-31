@@ -8,7 +8,7 @@ date_default_timezone_set('Australia/Brisbane');
 
 $is_cli = (php_sapi_name() === 'cli' || empty($_SERVER['REMOTE_ADDR']));
 $baseDir = __DIR__;
-$apiKey = "67747fe276b5d2.19745299";
+$apiKey = "API-KEY";
 
 // --- DUAL LIST LOGIC ---
 $dynamicFile = $baseDir . '/symbols_dynamic.php'; 
