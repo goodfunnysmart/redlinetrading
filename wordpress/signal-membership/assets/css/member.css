@@ -521,6 +521,8 @@ body.sig-app a.sig-btn.ghost:focus-visible,
 
 .sig-table tr:last-child td { border-bottom: none; }
 .sig-table tbody tr:hover { background: var(--sig-card-hover); }
+.sig-card-chev { display: none; }
+
 
 .sig-sym {
   font-family: var(--sig-mono);
@@ -764,6 +766,56 @@ body.sig-app a.sig-btn.ghost:focus-visible,
     justify-content: center;
     height: 36px;
     min-height: 36px;
+  }
+  .sig-table tr {
+    position: relative;
+    padding: 12px 36px 12px 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sig-table td.sig-cell-1d,
+  .sig-table td.sig-cell-ret,
+  .sig-table td.sig-cell-px,
+  .sig-table td.sig-cell-sh,
+  .sig-table td.sig-cell-val,
+  .sig-table td.sig-cell-chart,
+  .sig-table td.sig-cell-team {
+    display: none;
+  }
+  .sig-card-chev {
+    display: block;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: -6px;
+    border-right: 2px solid var(--sig-faint);
+    border-bottom: 2px solid var(--sig-faint);
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+  .sig-table tr.is-open {
+    padding: 14px 36px 14px 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .sig-table tr.is-open .sig-card-chev {
+    top: 22px;
+    margin-top: 0;
+    transform: rotate(225deg);
+  }
+  .sig-table tr.is-open td.sig-cell-1d,
+  .sig-table tr.is-open td.sig-cell-ret,
+  .sig-table tr.is-open td.sig-cell-px,
+  .sig-table tr.is-open td.sig-cell-sh,
+  .sig-table tr.is-open td.sig-cell-val,
+  .sig-table tr.is-open td.sig-cell-chart,
+  .sig-table tr.is-open td.sig-cell-team {
+    display: flex;
+  }
+  .sig-table tr.is-open .sig-cell-chart,
+  .sig-table tr.is-open .sig-cell-team {
+    grid-column: span 1;
   }
   .sig-note { max-width: none; }
   #sig-chart { height: 520px; }
