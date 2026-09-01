@@ -11,6 +11,7 @@ class SIG_Pmpro_Fields {
         add_filter('document_title_parts', array(__CLASS__, 'free_document_title'));
         add_filter('pmpro_level_cost_text', array(__CLASS__, 'free_cost_text'), 20, 2);
         add_filter('body_class', array(__CLASS__, 'body_class'));
+        add_filter('pmpro_include_payment_information_fields', array(__CLASS__, 'skip_empty_check_box'));
         register_meta('user', 'sig_capital', array(
             'type'              => 'number',
             'single'            => true,
@@ -44,6 +45,13 @@ class SIG_Pmpro_Fields {
     public static function is_free_checkout() {
         $free = SIG_Access::free_level_id();
         return $free > 0 && self::checkout_level_id() === $free;
+    }
+
+    public static function skip_empty_check_box($include) {
+        if (function_exists('pmpro_getGateway') && pmpro_getGateway() === 'check') {
+            return false;
+        }
+        return $include;
     }
 
     public static function is_paid_checkout() {

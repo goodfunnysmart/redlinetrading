@@ -1540,14 +1540,14 @@ body.sig-app .pmpro_section {
 
 body.sig-app .pmpro_form_field-password {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 body.sig-app .pmpro_form_field-password label {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 body.sig-app .pmpro_form_field-password input[type="password"],
 body.sig-app .pmpro_form_field-password input[type="text"] {
@@ -1557,37 +1557,75 @@ body.sig-app .pmpro_form_field-password input[type="text"] {
   padding-right: 12px !important;
 }
 body.sig-app .pmpro_form_field-password-toggle,
+body.sig-app .pmpro_form_field-password-toggle .pmpro_btn,
+body.sig-app .pmpro_form_field-password-toggle .pmpro_btn-plain,
 body.sig-app .pmpro_form_field-password button.pmpro_btn-plain,
-body.sig-app .pmpro_form_field-password .pmpro_btn.pmpro_btn-plain {
+body.sig-app button.pmpro_btn.pmpro_btn-plain.hide-if-no-js {
   position: static !important;
   float: none !important;
-  right: auto !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  width: auto !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 32px !important;
+  padding: 6px 12px !important;
   margin: 0 !important;
-  height: 28px;
-  padding: 0 8px !important;
   background: transparent !important;
-  color: var(--sig-muted) !important;
+  color: var(--sig-accent) !important;
   border: 0 !important;
   box-shadow: none !important;
-  font-size: 12px !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
   flex: 0 0 auto;
+}
+body.sig-app .pmpro_form_field-password-toggle-state {
+  white-space: nowrap;
+  overflow: visible;
 }
 
 body.sig-app .pmpro_form_field-checkbox,
 body.sig-app .login-remember,
+body.sig-app .login-remember label,
 body.sig-app .pmpro_form_field-checkbox label,
 body.sig-app label[for="rememberme"] {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   min-height: 44px;
   color: var(--sig-text) !important;
   font-size: 14px;
+  cursor: pointer;
 }
-body.sig-app input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
+body.sig-app .login-remember input[type="checkbox"],
+body.sig-app input[type="checkbox"]#rememberme,
+body.sig-app .pmpro_form_field-checkbox input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  margin: 0;
+  border: 1px solid var(--sig-border);
+  border-radius: 4px;
+  background: var(--sig-elev) !important;
+  cursor: pointer;
   accent-color: var(--sig-accent);
+}
+body.sig-app .login-remember input[type="checkbox"]:checked,
+body.sig-app input[type="checkbox"]#rememberme:checked,
+body.sig-app .pmpro_form_field-checkbox input[type="checkbox"]:checked {
+  background: var(--sig-accent) !important;
+  border-color: var(--sig-accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%2304121a' stroke-width='2' d='M3 8l3 3 7-7'/%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 body.sig-app .pmpro_checkout_login,
@@ -1633,9 +1671,15 @@ body.sig-app #pmpro_submit_span .pmpro_btn {
 
 body.sig-app .pmpro_payment-check,
 body.sig-app .gateway_check,
+body.sig-app .pmpro_form_field.pmpro_check_instructions,
 body.sig-app .pmpro_form_fieldset:has(.pmpro_check_instructions),
-body.sig-app .pmpro_form_field.pmpro_check_instructions {
+body.sig-app .pmpro_card:has(.pmpro_check_instructions) {
   display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
 }
 body.sig-app .pmpro_card_actions {
   background: var(--sig-card) !important;
