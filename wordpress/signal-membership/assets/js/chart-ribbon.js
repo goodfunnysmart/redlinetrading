@@ -48,8 +48,17 @@
     status.classList.toggle('sig-error', !!isError);
   }
 
-  function api(path) {
-    return fetch(rest + path, {
+  function api(path, query) {
+    var url = rest + path;
+    if (query && typeof query === 'object') {
+      var qs = Object.keys(query).map(function (k) {
+        return encodeURIComponent(k) + '=' + encodeURIComponent(query[k]);
+      }).join('&');
+      if (qs) {
+        url += (url.indexOf('?') >= 0 ? '&' : '?') + qs;
+      }
+    }
+    return fetch(url, {
       credentials: 'same-origin',
       headers: {
         Accept: 'application/json',
@@ -548,7 +557,7 @@
     if (!state.paidLists) {
       return fetchWatchlistFallback();
     }
-    return api('me/signals?view=' + encodeURIComponent(view)).then(function (data) {
+    return api('me/signals', { view: view }).then(function (data) {
       state.paidLists = true;
       var rows = data.signals || [];
       listCache[view] = rows;
