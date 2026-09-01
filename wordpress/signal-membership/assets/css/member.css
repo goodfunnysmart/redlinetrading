@@ -1,0 +1,1074 @@
+/* Signal Membership — dark trading shell */
+:root {
+  --sig-bg: #0b1220;
+  --sig-bg-2: #0e1628;
+  --sig-elev: #121b30;
+  --sig-card: #151d2e;
+  --sig-card-hover: #1a243a;
+  --sig-border: #243049;
+  --sig-border-soft: rgba(148, 163, 184, 0.14);
+  --sig-text: #e8eef8;
+  --sig-muted: #8b9bb4;
+  --sig-faint: #64748b;
+  --sig-buy: #22c55e;
+  --sig-buy-bg: rgba(34, 197, 94, 0.12);
+  --sig-sell: #ef4444;
+  --sig-sell-bg: rgba(239, 68, 68, 0.12);
+  --sig-watch: #f59e0b;
+  --sig-watch-bg: rgba(245, 158, 11, 0.12);
+  --sig-none: #64748b;
+  --sig-accent: #38bdf8;
+  --sig-accent-2: #818cf8;
+  --sig-btn-bg: #0ea5e9;
+  --sig-btn-bg-hover: #38bdf8;
+  --sig-btn-ink: #04121a;
+  --sig-topbar: rgba(11, 18, 32, 0.92);
+  --sig-chart-grid: #1e293b;
+  --sig-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  --sig-radius: 16px;
+  --sig-mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sig-sans: "IBM Plex Sans", "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+html.sig-html {
+  color-scheme: dark;
+}
+
+html.sig-html[data-theme="light"] {
+  color-scheme: light;
+}
+
+html.sig-html,
+body.sig-app {
+  background: var(--sig-bg);
+  color: var(--sig-text);
+  font-family: var(--sig-sans);
+  margin: 0;
+  min-height: 100%;
+  -webkit-font-smoothing: antialiased;
+}
+
+body.sig-app {
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(56, 189, 248, 0.08), transparent 50%),
+    radial-gradient(900px 400px at 100% 0%, rgba(129, 140, 248, 0.08), transparent 45%),
+    var(--sig-bg);
+}
+
+body.sig-app #wpadminbar { display: none !important; }
+body.sig-app.admin-bar { margin-top: 0 !important; padding-top: 0 !important; }
+html.sig-html { margin-top: 0 !important; }
+
+.sig-topbar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 14px 28px;
+  border-bottom: 1px solid var(--sig-border-soft);
+  background: var(--sig-topbar);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.sig-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--sig-text);
+  text-decoration: none;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-size: 13px;
+}
+
+.sig-brand-mark {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #22c55e, #38bdf8);
+  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+}
+
+.sig-nav {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+
+.sig-nav a {
+  color: var(--sig-muted);
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 10px;
+}
+
+.sig-nav a:hover,
+.sig-nav a.is-active {
+  color: var(--sig-text);
+  background: var(--sig-elev);
+}
+
+.sig-user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--sig-muted);
+  font-size: 13px;
+}
+
+.sig-user a {
+  color: var(--sig-accent);
+  text-decoration: none;
+}
+
+body.sig-app .sig-user a.sig-btn,
+body.sig-app .sig-topbar a.sig-btn {
+  color: var(--sig-btn-ink);
+  background: var(--sig-btn-bg);
+  text-decoration: none;
+}
+
+body.sig-app .sig-user a.sig-btn:hover,
+body.sig-app .sig-user a.sig-btn:focus-visible,
+body.sig-app .sig-topbar a.sig-btn:hover,
+body.sig-app .sig-topbar a.sig-btn:focus-visible {
+  color: var(--sig-btn-ink);
+  background: var(--sig-btn-bg-hover);
+  text-decoration: none;
+}
+
+body.sig-app .sig-user a.sig-btn.ghost,
+body.sig-app .sig-topbar a.sig-btn.ghost {
+  color: var(--sig-text);
+  background: transparent;
+  border: 1px solid var(--sig-border);
+}
+
+body.sig-app .sig-user a.sig-btn.ghost:hover,
+body.sig-app .sig-topbar a.sig-btn.ghost:hover {
+  color: var(--sig-text);
+  background: rgba(148, 163, 184, 0.12);
+  border-color: #3b4d6b;
+}
+
+.sig-theme-toggle {
+  appearance: none;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--sig-border);
+  background: transparent;
+  color: var(--sig-text);
+  font: 600 12px var(--sig-sans);
+  cursor: pointer;
+}
+
+.sig-theme-toggle:hover,
+.sig-theme-toggle:focus-visible {
+  border-color: var(--sig-accent);
+  color: var(--sig-text);
+}
+
+.sig-main {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 28px 22px 80px;
+}
+
+.sig-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+
+.sig-hero h1 {
+  margin: 0 0 6px;
+  font-size: 28px;
+  letter-spacing: -0.03em;
+}
+
+.sig-kicker {
+  margin: 0;
+  color: var(--sig-muted);
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
+
+.sig-asof {
+  color: var(--sig-faint);
+  font-family: var(--sig-mono);
+  font-size: 12px;
+}
+
+.sig-stats {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.sig-stat {
+  background: var(--sig-card);
+  border: 1px solid var(--sig-border-soft);
+  border-radius: var(--sig-radius);
+  padding: 16px 18px;
+  box-shadow: var(--sig-shadow);
+}
+
+.sig-stat .n {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  font-family: var(--sig-mono);
+}
+
+.sig-stat .l {
+  color: var(--sig-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 4px;
+}
+
+.sig-stat.is-buy .n { color: var(--sig-buy); }
+.sig-stat.is-sell .n { color: var(--sig-sell); }
+.sig-stat.is-watch .n { color: var(--sig-watch); }
+
+
+.sig-filter-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: var(--sig-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.sig-filter-wrap input {
+  height: 40px;
+  min-width: 160px;
+  border-radius: 10px;
+  border: 1px solid var(--sig-border);
+  background: var(--sig-elev);
+  color: var(--sig-text);
+  padding: 0 12px;
+  font: 500 14px var(--sig-sans);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.sig-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.sig-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sig-chip {
+  appearance: none;
+  border: 1px solid var(--sig-border);
+  background: transparent;
+  color: var(--sig-muted);
+  border-radius: 999px;
+  padding: 7px 14px;
+  font: 600 13px var(--sig-sans);
+  cursor: pointer;
+}
+
+.sig-chip:hover { color: var(--sig-text); border-color: #3b4d6b; }
+.sig-chip.is-on { color: var(--sig-bg); background: var(--sig-text); border-color: var(--sig-text); }
+.sig-chip[data-filter="buy"].is-on { background: var(--sig-buy); border-color: var(--sig-buy); color: #052e16; }
+.sig-chip[data-filter="sell"].is-on { background: var(--sig-sell); border-color: var(--sig-sell); color: #3f0a0a; }
+.sig-chip[data-filter="watch"].is-on { background: var(--sig-watch); border-color: var(--sig-watch); color: #3b2504; }
+
+.sig-add {
+  display: flex;
+  gap: 8px;
+}
+
+.sig-add input,
+.sig-add button,
+.sig-btn {
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--sig-border);
+  font: 500 14px var(--sig-sans);
+}
+
+.sig-add input {
+  background: var(--sig-elev);
+  color: var(--sig-text);
+  padding: 0 12px;
+  min-width: 160px;
+}
+
+.sig-btn,
+.sig-add button {
+  background: var(--sig-btn-bg);
+  color: var(--sig-btn-ink);
+  font-weight: 700;
+  padding: 0 16px;
+  cursor: pointer;
+  border: none;
+}
+
+body.sig-app a.sig-btn,
+.sig-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: auto;
+  min-height: 40px;
+  height: 40px;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  align-self: center;
+  transition: background 0.15s ease, filter 0.15s ease, transform 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+body.sig-app a.sig-btn:hover,
+body.sig-app a.sig-btn:focus-visible,
+.sig-btn:hover,
+.sig-btn:focus-visible,
+.sig-add button:hover,
+.sig-add button:focus-visible {
+  background: var(--sig-btn-bg-hover);
+  color: var(--sig-btn-ink);
+  text-decoration: none;
+  filter: none;
+}
+
+body.sig-app a.sig-btn:active,
+.sig-btn:active,
+.sig-add button:active {
+  transform: translateY(1px);
+  filter: brightness(0.96);
+}
+
+.sig-btn.ghost,
+.sig-remove {
+  background: transparent;
+  color: var(--sig-muted);
+  border: 1px solid var(--sig-border);
+}
+
+body.sig-app a.sig-btn.ghost:hover,
+body.sig-app a.sig-btn.ghost:focus-visible,
+.sig-btn.ghost:hover,
+.sig-btn.ghost:focus-visible {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--sig-text);
+  border-color: #3b4d6b;
+  filter: none;
+}
+
+.sig-remove {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.sig-remove:hover { color: var(--sig-sell); border-color: var(--sig-sell); }
+
+.sig-card {
+  background: var(--sig-card);
+  border: 1px solid var(--sig-border-soft);
+  border-radius: var(--sig-radius);
+  box-shadow: var(--sig-shadow);
+  overflow: hidden;
+}
+
+.sig-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sig-table th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sig-faint);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--sig-border-soft);
+  font-weight: 600;
+}
+
+.sig-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--sig-border-soft);
+  vertical-align: middle;
+}
+
+.sig-th {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.sig-th:hover { color: var(--sig-text); }
+.sig-th.is-on { color: var(--sig-text); }
+.sig-th.is-on::after {
+  content: " \25B2";
+  font-size: 9px;
+  margin-left: 2px;
+}
+.sig-th.is-on[aria-sort="descending"]::after { content: " \25BC"; }
+
+.sig-sortbar {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--sig-muted);
+}
+.sig-sort-btn {
+  appearance: none;
+  background: var(--sig-elev);
+  border: 1px solid var(--sig-border);
+  color: var(--sig-muted);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.sig-sort-btn.is-on {
+  color: var(--sig-text);
+  border-color: var(--sig-accent);
+}
+.sig-sort-btn.is-on::after {
+  content: " \25B2";
+  font-size: 9px;
+  margin-left: 4px;
+}
+.sig-sort-btn.is-on[aria-sort="descending"]::after { content: " \25BC"; }
+
+
+.sig-table tr:last-child td { border-bottom: none; }
+.sig-table tbody tr:hover { background: var(--sig-card-hover); }
+
+.sig-sym {
+  font-family: var(--sig-mono);
+  font-weight: 600;
+  color: var(--sig-text);
+  text-decoration: none;
+}
+
+.sig-sym:hover { color: var(--sig-accent); }
+
+.sig-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.sig-pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.sig-pill.buy { color: var(--sig-buy); background: var(--sig-buy-bg); }
+.sig-pill.sell { color: var(--sig-sell); background: var(--sig-sell-bg); }
+.sig-pill.watch { color: var(--sig-watch); background: var(--sig-watch-bg); }
+.sig-pill.none { color: var(--sig-none); background: rgba(100, 116, 139, 0.12); }
+
+.sig-num { font-family: var(--sig-mono); font-size: 13px; }
+.sig-note { color: var(--sig-muted); font-size: 13px; max-width: 340px; }
+
+.sig-empty,
+.sig-msg,
+.sig-gate {
+  padding: 40px 24px;
+  text-align: center;
+  color: var(--sig-muted);
+}
+
+.sig-gate h2 { color: var(--sig-text); margin-top: 0; }
+
+.sig-legal {
+  margin-top: 22px;
+  color: var(--sig-faint);
+  font-size: 12px;
+  line-height: 1.55;
+  max-width: 720px;
+}
+
+.sig-chart-wrap {
+  background: var(--sig-card);
+  border: 1px solid var(--sig-border-soft);
+  border-radius: var(--sig-radius);
+  box-shadow: var(--sig-shadow);
+  padding: 8px;
+}
+
+#sig-chart {
+  width: 100%;
+  height: 680px;
+}
+
+.sig-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 12px 8px 4px;
+  color: var(--sig-muted);
+  font-size: 12px;
+}
+
+.sig-swatch {
+  display: inline-block;
+  width: 18px;
+  height: 3px;
+  border-radius: 2px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
+.sig-error { color: var(--sig-sell); padding: 16px; }
+
+@media (max-width: 860px) {
+  .sig-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sig-topbar { padding: 12px 16px; }
+}
+
+@media (max-width: 720px) {
+  .sig-main {
+    padding: 16px 12px 64px;
+    overflow-x: hidden;
+  }
+  .sig-topbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .sig-toolbar,
+  .sig-sizing,
+  .sig-add {
+    width: 100%;
+  }
+  .sig-add input {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+  .sig-card {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .sig-sortbar { display: flex; }
+  .sig-table thead { display: none; }
+  .sig-table,
+  .sig-table tbody {
+    display: block;
+    width: 100%;
+  }
+  .sig-table tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 8px 12px;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    margin: 0 0 10px;
+    padding: 14px;
+    background: var(--sig-card);
+    border: 1px solid var(--sig-border-soft);
+    border-radius: 14px;
+    box-shadow: var(--sig-shadow);
+  }
+  .sig-table tbody tr:hover { background: var(--sig-card); }
+  .sig-table td {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 2px;
+    padding: 0;
+    border: 0;
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .sig-table td::before {
+    content: attr(data-label);
+    color: var(--sig-faint);
+    font-size: 10px;
+    line-height: 1.2;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+  .sig-table td[data-label=""]::before,
+  .sig-cell-sym::before,
+  .sig-cell-sig::before,
+  .sig-cell-chart::before,
+  .sig-cell-team::before {
+    content: none;
+  }
+  .sig-cell-sym {
+    justify-content: center;
+  }
+  .sig-cell-sig {
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .sig-cell-1d {
+    align-items: flex-start;
+  }
+  .sig-cell-px,
+  .sig-cell-val,
+  .sig-cell-sig {
+    align-items: flex-end;
+    text-align: right;
+  }
+  .sig-sym {
+    font-size: 16px;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .sig-num {
+    font-size: 14px;
+    line-height: 1.25;
+    overflow-wrap: anywhere;
+    max-width: 100%;
+  }
+  .sig-cell-chart,
+  .sig-cell-team {
+    flex-direction: row;
+    align-items: stretch;
+    margin-top: 4px;
+  }
+  .sig-cell-chart .sig-btn,
+  .sig-cell-team .sig-remove,
+  .sig-cell-team .sig-add-row {
+    width: 100%;
+    min-width: 0;
+    justify-content: center;
+    height: 36px;
+    min-height: 36px;
+  }
+  .sig-note { max-width: none; }
+  #sig-chart { height: 520px; }
+  .sig-hero h1 { font-size: 22px; }
+}
+
+.sig-packs { display:flex; gap:8px; flex-wrap:wrap; width:100%; }
+.sig-pack {
+  border: 1px dashed var(--sig-border);
+  background: transparent;
+  color: var(--sig-muted);
+  border-radius: 999px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.sig-pack:hover { color: var(--sig-text); border-color: var(--sig-accent); }
+
+.sig-gate-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+.sig-gate .sig-legal { margin-top: 18px; }
+.sig-topbar .sig-btn {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+
+button.sig-stat {
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+
+.sig-stat {
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, outline-color 0.15s ease;
+}
+
+.sig-stat:hover {
+  border-color: var(--sig-accent);
+  background: var(--sig-card-hover);
+}
+
+.sig-stat.is-on {
+  outline: 2px solid var(--sig-accent);
+  outline-offset: 0;
+  border-color: var(--sig-accent);
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.12), var(--sig-shadow);
+}
+
+.sig-stat.is-all .n { color: var(--sig-accent); }
+
+.sig-chart-btn {
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 1;
+}
+
+.sig-chart-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sig-chart-mode {
+  display: flex;
+  gap: 8px;
+}
+
+.sig-sizing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.sig-cap-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--sig-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.sig-cap-label input {
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid var(--sig-border);
+  background: var(--sig-elev);
+  color: var(--sig-text);
+  padding: 0 12px;
+  font: 500 14px var(--sig-mono);
+  width: 140px;
+}
+
+.sig-size-meta {
+  color: var(--sig-muted);
+  font-size: 13px;
+}
+
+.sig-size-meta strong {
+  color: var(--sig-text);
+  font-family: var(--sig-mono);
+  font-weight: 600;
+}
+
+.sig-add-row {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  background: transparent;
+  color: var(--sig-buy);
+  border: 1px solid var(--sig-border);
+}
+
+.sig-add-row:hover {
+  border-color: var(--sig-buy);
+}
+
+.sig-up { color: var(--sig-buy); }
+.sig-down { color: var(--sig-sell); }
+
+.sig-ok {
+  color: var(--sig-buy);
+  padding: 16px;
+}
+
+.sig-form {
+  padding: 22px 24px 28px;
+  max-width: 560px;
+}
+
+.sig-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.sig-form-row label {
+  color: var(--sig-muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.sig-form-row input {
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid var(--sig-border);
+  background: var(--sig-elev);
+  color: var(--sig-text);
+  padding: 0 12px;
+  font: 500 14px var(--sig-sans);
+}
+
+.sig-form-row input:focus {
+  outline: 2px solid var(--sig-accent);
+  border-color: var(--sig-accent);
+}
+
+.sig-form-actions {
+  margin-top: 8px;
+}
+
+.sig-user-name {
+  color: var(--sig-text) !important;
+  font-weight: 600;
+}
+
+.sig-user-name:hover {
+  color: var(--sig-accent) !important;
+}
+
+@media (max-width: 1100px) {
+  .sig-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+@media (max-width: 860px) {
+  .sig-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sig-stat.is-all { grid-column: 1 / -1; }
+}
+
+/* PMPro account / profile / billing inside the dark shell */
+body.sig-app .pmpro,
+body.sig-app #pmpro_form,
+body.sig-app .entry-content,
+body.sig-app .wp-block-post-content {
+  color: var(--sig-text);
+  max-width: 920px;
+}
+
+body.sig-app .pmpro a,
+body.sig-app #pmpro_form a {
+  color: var(--sig-accent);
+}
+
+body.sig-app .pmpro_card,
+body.sig-app .pmpro_box,
+body.sig-app .pmpro_checkout_box,
+body.sig-app .pmpro_form_fieldset {
+  background: var(--sig-card) !important;
+  border: 1px solid var(--sig-border) !important;
+  border-radius: var(--sig-radius) !important;
+  color: var(--sig-text) !important;
+  box-shadow: var(--sig-shadow);
+}
+
+body.sig-app .pmpro_card_title,
+body.sig-app .pmpro_form_legend,
+body.sig-app .pmpro_title,
+body.sig-app h2.pmpro_title,
+body.sig-app h3 {
+  color: var(--sig-text) !important;
+}
+
+body.sig-app .pmpro_card_content,
+body.sig-app .pmpro_form_fields,
+body.sig-app .pmpro_form_field label,
+body.sig-app .pmpro_form_label,
+body.sig-app .pmpro_checkout-field label {
+  color: var(--sig-muted) !important;
+}
+
+body.sig-app .pmpro_form_input,
+body.sig-app .pmpro_form_input-text,
+body.sig-app .pmpro_form_input-password,
+body.sig-app .pmpro_form_input-email,
+body.sig-app .pmpro_form_input-select,
+body.sig-app input.input,
+body.sig-app input[type="text"],
+body.sig-app input[type="email"],
+body.sig-app input[type="password"],
+body.sig-app input[type="tel"],
+body.sig-app input[type="number"],
+body.sig-app select,
+body.sig-app textarea {
+  background: var(--sig-elev) !important;
+  border: 1px solid var(--sig-border) !important;
+  color: var(--sig-text) !important;
+  border-radius: 10px !important;
+}
+
+body.sig-app .pmpro_btn,
+body.sig-app .pmpro_btn-submit,
+body.sig-app .pmpro_btn-primary,
+body.sig-app input[type="submit"] {
+  background: var(--sig-accent) !important;
+  border: 0 !important;
+  color: #0b1220 !important;
+  font-weight: 600 !important;
+  border-radius: 10px !important;
+}
+
+body.sig-app .pmpro_table,
+body.sig-app .pmpro_table th,
+body.sig-app .pmpro_table td {
+  background: transparent !important;
+  color: var(--sig-text) !important;
+  border-color: var(--sig-border) !important;
+}
+
+body.sig-app .pmpro_message,
+body.sig-app .pmpro_success,
+body.sig-app .pmpro_error,
+body.sig-app .pmpro_alert {
+  border-radius: 10px;
+}
+
+body.sig-app .pmpro_actions_nav a {
+  color: var(--sig-accent) !important;
+}
+
+
+
+body.sig-app {
+  --pmpro--color--base: var(--sig-bg);
+  --pmpro--color--contrast: var(--sig-text);
+  --pmpro--color--accent: var(--sig-accent);
+  --pmpro--color--border: var(--sig-border);
+  --pmpro--color--info-background: var(--sig-card);
+}
+body.sig-app .wp-block-group,
+body.sig-app .wp-block-post-content,
+body.sig-app .entry-content {
+  background: transparent !important;
+}
+body.sig-app .pmpro_level,
+body.sig-app .pmpro_checkout_level,
+body.sig-app .pmpro_levels_table,
+body.sig-app .pmpro_confirmation_wrap,
+body.sig-app .pmpro_section {
+  background: var(--sig-card) !important;
+  border: 1px solid var(--sig-border-soft) !important;
+  border-radius: var(--sig-radius) !important;
+  color: var(--sig-text) !important;
+}
+body.sig-app .pmpro_price,
+body.sig-app .pmpro_level-price,
+body.sig-app .pmpro_checkout-price {
+  color: var(--sig-accent) !important;
+}
+body.sig-app .pmpro_font-x-large,
+body.sig-app .pmpro_card h2,
+body.sig-app .pmpro_card h3 {
+  color: var(--sig-text) !important;
+}
+body.sig-app .pmpro_form_hint,
+body.sig-app .pmpro_checkout_gateway-description,
+body.sig-app .pmpro_asterisk {
+  color: var(--sig-muted) !important;
+}
+body.sig-app #pmpro_pricing_fields,
+body.sig-app #pmpro_user_fields,
+body.sig-app #pmpro_billing_address_fields,
+body.sig-app #pmpro_payment_information_fields,
+body.sig-app #pmpro_tos_fields {
+  background: var(--sig-card) !important;
+  border-color: var(--sig-border) !important;
+  color: var(--sig-text) !important;
+}
+
+/* Light theme — same layout, inverted tokens */
+html.sig-html[data-theme="light"] {
+  --sig-bg: #f3f6fb;
+  --sig-bg-2: #e8eef7;
+  --sig-elev: #ffffff;
+  --sig-card: #ffffff;
+  --sig-card-hover: #f8fafc;
+  --sig-border: #cfd8e6;
+  --sig-border-soft: rgba(15, 23, 42, 0.08);
+  --sig-text: #0b1220;
+  --sig-muted: #4b5d73;
+  --sig-faint: #6b7c91;
+  --sig-buy-bg: rgba(34, 197, 94, 0.12);
+  --sig-sell-bg: rgba(239, 68, 68, 0.12);
+  --sig-watch-bg: rgba(245, 158, 11, 0.12);
+  --sig-btn-bg: #0369a1;
+  --sig-btn-bg-hover: #0284c7;
+  --sig-btn-ink: #ffffff;
+  --sig-topbar: rgba(255, 255, 255, 0.94);
+  --sig-chart-grid: #e2e8f0;
+  --sig-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+}
+
+html.sig-html[data-theme="light"] body.sig-app {
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(3, 105, 161, 0.08), transparent 50%),
+    radial-gradient(900px 400px at 100% 0%, rgba(129, 140, 248, 0.08), transparent 45%),
+    var(--sig-bg);
+}
+
+html.sig-html[data-theme="light"] .sig-chip.is-on {
+  color: #f8fafc;
+}
