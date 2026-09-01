@@ -32,7 +32,6 @@ $sig_market_label = (!empty($sig_market['label']) && !empty($sig_market['status'
     <span class="sig-brand-mark" aria-hidden="true"></span>
     Redline
   </a>
-  <span class="sig-market-badge" data-market-badge<?php echo $sig_market_label === '' ? ' hidden' : ''; ?>><?php echo esc_html($sig_market_label); ?></span>
   <nav class="sig-nav">
     <?php if (!is_user_logged_in() || SIG_Access::current_is_paid()) : ?>
     <a class="<?php echo SIG_Shortcodes::post_has('sig_dashboard') ? 'is-active' : ''; ?>" href="<?php echo esc_url(SIG_Access::dashboard_url()); ?>">Dashboard</a>
@@ -43,6 +42,7 @@ $sig_market_label = (!empty($sig_market['label']) && !empty($sig_market['status'
     <?php endif; ?>
   </nav>
   <div class="sig-user">
+    <span class="sig-market-badge" data-market-badge<?php echo $sig_market_label === '' ? ' hidden' : ''; ?>><?php echo esc_html($sig_market_label); ?></span>
     <button type="button" class="sig-theme-toggle" id="sig-theme-toggle" aria-label="Toggle colour theme" title="Switch to light">
       <span class="sig-theme-label">Light</span>
     </button>
