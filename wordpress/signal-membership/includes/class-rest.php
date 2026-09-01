@@ -207,7 +207,12 @@ class SIG_REST {
 
         $tz = new DateTimeZone('Australia/Brisbane');
         $day = (new DateTime('now', $tz))->format('Y-m-d');
-        $cache_key = 'sig_bars_v1_' . md5($symbol . '|' . $day);
+        $mtime = 0;
+        $csv = rtrim(SIG_Cache::cache_dir(), '/') . '/' . SIG_Cache::symbol_to_filename($symbol);
+        if (is_readable($csv)) {
+            $mtime = (int) filemtime($csv);
+        }
+        $cache_key = 'sig_bars_v2_' . md5($symbol . '|' . $day . '|' . $mtime);
         $cached = get_transient($cache_key);
         if (is_array($cached)) {
             return rest_ensure_response($cached);
