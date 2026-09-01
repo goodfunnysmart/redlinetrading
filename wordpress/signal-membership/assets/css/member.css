@@ -1673,7 +1673,8 @@ body.sig-app .pmpro_payment-check,
 body.sig-app .gateway_check,
 body.sig-app .pmpro_form_field.pmpro_check_instructions,
 body.sig-app .pmpro_form_fieldset:has(.pmpro_check_instructions),
-body.sig-app .pmpro_card:has(.pmpro_check_instructions) {
+body.sig-app .pmpro_card:has(.pmpro_check_instructions),
+body.sig-app #pmpro_payment_information_fields:has(.pmpro_check_instructions) {
   display: none !important;
   height: 0 !important;
   margin: 0 !important;

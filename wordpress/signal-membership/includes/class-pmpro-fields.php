@@ -12,6 +12,7 @@ class SIG_Pmpro_Fields {
         add_filter('pmpro_level_cost_text', array(__CLASS__, 'free_cost_text'), 20, 2);
         add_filter('body_class', array(__CLASS__, 'body_class'));
         add_filter('pmpro_include_payment_information_fields', array(__CLASS__, 'skip_empty_check_box'));
+        add_action('template_redirect', array(__CLASS__, 'start_checkout_buffer'));
         register_meta('user', 'sig_capital', array(
             'type'              => 'number',
             'single'            => true,
@@ -48,10 +49,39 @@ class SIG_Pmpro_Fields {
     }
 
     public static function skip_empty_check_box($include) {
-        if (function_exists('pmpro_getGateway') && pmpro_getGateway() === 'check') {
+        $gw = '';
+        if (function_exists('pmpro_getGateway')) {
+            $gw = (string) pmpro_getGateway();
+        }
+        if ($gw === '' && function_exists('pmpro_getOption')) {
+            $gw = (string) pmpro_getOption('gateway');
+        }
+        if ($gw === 'check') {
             return false;
         }
         return $include;
+    }
+
+    public static function start_checkout_buffer() {
+        if (is_admin()) {
+            return;
+        }
+        if (!self::is_paid_checkout() && !self::is_free_checkout()) {
+            return;
+        }
+        ob_start(array(__CLASS__, 'strip_check_fieldset'));
+    }
+
+    public static function strip_check_fieldset($html) {
+        if (!is_string($html) || strpos($html, 'Pay by Check') === false) {
+            return $html;
+        }
+        $stripped = preg_replace(
+            '#<fieldset[^>]*id=["\']pmpro_payment_information_fields["\'][^>]*>.*?Pay by Check.*?</fieldset>#si',
+            '',
+            $html
+        );
+        return is_string($stripped) ? $stripped : $html;
     }
 
     public static function is_paid_checkout() {
