@@ -447,10 +447,16 @@
       var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
       return v || fallback;
     }
-    var height = Math.max(el.clientHeight || 0, 680);
+    function chartBoxHeight() {
+      var h = el.clientHeight || 0;
+      if (h >= 160) {
+        return h;
+      }
+      return (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) ? 360 : 680;
+    }
     var chart = LightweightCharts.createChart(el, {
       width: el.clientWidth,
-      height: height,
+      height: chartBoxHeight(),
       layout: {
         background: { color: cssVar('--sig-bg', '#0b1220') },
         textColor: cssVar('--sig-muted', '#94a3b8'),
@@ -795,7 +801,11 @@
 
   window.addEventListener('resize', function () {
     if (state.chart && el) {
-      state.chart.applyOptions({ width: el.clientWidth });
+      var h = el.clientHeight || 0;
+      if (h < 160) {
+        h = (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) ? 360 : 680;
+      }
+      state.chart.applyOptions({ width: el.clientWidth, height: h });
     }
     if (window.innerWidth >= 720) {
       closeDrawer();

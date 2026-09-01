@@ -678,14 +678,55 @@ body.sig-app a.sig-btn.ghost:focus-visible,
     gap: 10px;
   }
   .sig-toolbar,
-  .sig-sizing,
-  .sig-add {
+  .sig-sizing {
     width: 100%;
+  }
+  .sig-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: stretch;
+  }
+  .sig-sizing,
+  .sig-packs {
+    grid-column: 1 / -1;
+  }
+  .sig-toolbar .sig-add {
+    width: auto;
+    min-width: 0;
   }
   .sig-add input {
     flex: 1;
     min-width: 0;
+    width: auto;
+  }
+  .sig-filter-wrap {
+    min-width: 0;
+    gap: 0;
+  }
+  .sig-filter-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .sig-filter-wrap input {
+    min-width: 0;
     width: 100%;
+  }
+  .sig-chart-toolbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+  }
+  .sig-chart-toolbar .sig-add {
+    width: auto;
+    min-width: 0;
+  }
+  .sig-chart-mode {
+    grid-column: 1 / -1;
   }
   .sig-card {
     background: transparent;
@@ -845,7 +886,7 @@ body.sig-app a.sig-btn.ghost:focus-visible,
     grid-column: span 1;
   }
   .sig-note { max-width: none; }
-  #sig-chart { height: 520px; }
+  #sig-chart { height: min(42dvh, 380px); min-height: 300px; }
   .sig-hero h1 { font-size: 22px; }
 }
 

@@ -35,7 +35,7 @@ if (!defined('ABSPATH')) {
       <datalist id="sig-universe"></datalist>
       <button type="submit">Add</button>
     </form>
-    <label class="sig-filter-wrap">Filter
+    <label class="sig-filter-wrap"><span class="sig-filter-label">Filter</span>
       <input type="search" data-q placeholder="BHP, buy…" autocomplete="off" />
     </label>
     <div class="sig-packs">

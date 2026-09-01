@@ -38,7 +38,7 @@ $symbol = isset($_GET['symbol']) ? SIG_Access::sanitize_symbol(wp_unslash($_GET[
 
     <div class="sig-chart-col">
       <div class="sig-chart-toolbar">
-        <button type="button" class="sig-btn ghost sig-list-btn" data-drawer-open>List</button>
+        <button type="button" class="sig-btn sig-list-btn" data-drawer-open>List</button>
         <form class="sig-add" data-chart-pick>
           <input type="text" name="symbol" list="sig-universe" placeholder="Symbol e.g. BHP.AU" autocomplete="off" />
           <datalist id="sig-universe"></datalist>
