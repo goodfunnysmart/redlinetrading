@@ -300,11 +300,13 @@ class SIG_Shortcodes {
         $html .= '<h2>' . esc_html($message) . '</h2>';
         $html .= '<div class="sig-gate-actions">';
         if (!is_user_logged_in()) {
-            $html .= '<a class="sig-btn" href="' . esc_url($login) . '">Log in</a>';
-            $html .= '<a class="sig-btn ghost" href="' . esc_url($register) . '">Register</a>';
+            $html .= '<a class="sig-btn ghost" href="' . esc_url($login) . '">Log in</a>';
         }
         $html .= '<a class="sig-btn" href="' . esc_url($paid) . '">Join Radar Member · $19/yr</a>';
         $html .= '</div>';
+        if (!is_user_logged_in()) {
+            $html .= '<p class="sig-gate-free"><a href="' . esc_url($register) . '">Create a free chart login</a></p>';
+        }
         $html .= '<p class="sig-legal">Free accounts can use charts. Radar Member ($19 AUD per year) unlocks the dashboard, Dreamteam and weekday email. General information only, not personal financial advice.</p>';
         $html .= '</div>';
         return $html;

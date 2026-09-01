@@ -199,20 +199,48 @@ body.sig-app .sig-topbar a.sig-btn.ghost:hover {
 
 .sig-theme-toggle {
   appearance: none;
-  height: 32px;
-  padding: 0 12px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid var(--sig-border);
   background: transparent;
   color: var(--sig-text);
-  font: 600 12px var(--sig-sans);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sig-theme-toggle:hover,
 .sig-theme-toggle:focus-visible {
   border-color: var(--sig-accent);
   color: var(--sig-text);
+}
+
+.sig-theme-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  position: relative;
+}
+.sig-theme-icon svg {
+  display: block;
+}
+.sig-icon-moon { display: none; }
+html.sig-html[data-theme="light"] .sig-icon-sun { display: none; }
+html.sig-html[data-theme="light"] .sig-icon-moon { display: block; }
+
+.sig-login-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  white-space: nowrap;
+  color: var(--sig-accent);
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .sig-main {
@@ -583,10 +611,18 @@ body.sig-app a.sig-btn.ghost:focus-visible,
 
 .sig-legal {
   margin-top: 22px;
-  color: var(--sig-faint);
-  font-size: 12px;
+  color: #9fb0c0;
+  font-size: 14px;
   line-height: 1.55;
   max-width: 720px;
+}
+
+.sig-gate-free {
+  margin: 14px 0 0;
+  font-size: 14px;
+}
+.sig-gate-free a {
+  color: var(--sig-accent);
 }
 
 .sig-chart-wrap {
@@ -676,7 +712,62 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   .sig-topbar {
     flex-wrap: wrap;
     gap: 10px;
+    overflow-x: hidden;
   }
+}
+
+@media (max-width: 480px) {
+  html.sig-html,
+  body.sig-app {
+    overflow-x: hidden;
+  }
+  .sig-topbar.sig-topbar-guest {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+    align-items: center;
+    gap: 8px 6px;
+    padding: 10px 12px;
+    overflow-x: hidden;
+  }
+  .sig-brand {
+    grid-column: 1;
+    min-width: 0;
+  }
+  .sig-nav {
+    grid-column: 2;
+    flex: unset;
+    min-width: 0;
+    gap: 0;
+  }
+  .sig-nav a {
+    padding: 8px 8px;
+  }
+  .sig-topbar-guest .sig-user {
+    display: contents;
+  }
+  .sig-theme-toggle {
+    grid-column: 3;
+  }
+  .sig-login-link,
+  .sig-user > a:not(.sig-btn) {
+    grid-column: auto;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .sig-topbar .sig-btn {
+    grid-column: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .sig-market-badge {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: start;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 720px) {
   .sig-toolbar,
   .sig-sizing {
     width: 100%;
@@ -909,14 +1000,17 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   flex-wrap: wrap;
   margin-top: 16px;
 }
-.sig-gate .sig-legal { margin-top: 18px; }
+.sig-gate .sig-legal { margin-top: 18px; color: #9fb0c0; font-size: 14px; }
 .sig-topbar .sig-btn {
-  height: 32px;
-  padding: 0 12px;
-  font-size: 12px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 13px;
   display: inline-flex;
   align-items: center;
   text-decoration: none;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 
@@ -1416,6 +1510,144 @@ body.sig-app #pmpro_tos_fields {
   background: var(--sig-card) !important;
   border-color: var(--sig-border) !important;
   color: var(--sig-text) !important;
+}
+
+body.sig-app .pmpro,
+body.sig-app #pmpro_form,
+body.sig-app .pmpro_login_wrap,
+body.sig-app .pmpro_checkout,
+body.sig-app .entry-content,
+body.sig-app .wp-block-post-content {
+  max-width: 580px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+body.sig-app .pmpro_card,
+body.sig-app .pmpro_box,
+body.sig-app .pmpro_section {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box;
+}
+
+body.sig-app .pmpro_form_field-password {
+  position: relative;
+  overflow: hidden;
+}
+body.sig-app .pmpro_form_field-password label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+body.sig-app .pmpro_form_field-password input[type="password"],
+body.sig-app .pmpro_form_field-password input[type="text"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding-right: 12px !important;
+}
+body.sig-app .pmpro_form_field-password-toggle,
+body.sig-app .pmpro_form_field-password button.pmpro_btn-plain,
+body.sig-app .pmpro_form_field-password .pmpro_btn.pmpro_btn-plain {
+  position: static !important;
+  float: none !important;
+  right: auto !important;
+  margin: 0 !important;
+  height: 28px;
+  padding: 0 8px !important;
+  background: transparent !important;
+  color: var(--sig-muted) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  font-size: 12px !important;
+  flex: 0 0 auto;
+}
+
+body.sig-app .pmpro_form_field-checkbox,
+body.sig-app .login-remember,
+body.sig-app .pmpro_form_field-checkbox label,
+body.sig-app label[for="rememberme"] {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  color: var(--sig-text) !important;
+  font-size: 14px;
+}
+body.sig-app input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--sig-accent);
+}
+
+body.sig-app .pmpro_checkout_login,
+body.sig-app .pmpro_already_have_account,
+body.sig-app .pmpro_form_login,
+body.sig-app .pmpro_actions_nav,
+body.sig-app p.pmpro_checkout-msg,
+body.sig-app .pmpro_message:not(.pmpro_error):not(.pmpro_success) {
+  background: var(--sig-card) !important;
+  color: var(--sig-muted) !important;
+  border-color: var(--sig-border) !important;
+  box-shadow: none !important;
+}
+
+body.sig-app .pmpro_form_field-honeypot,
+body.sig-app .pmpro_form_field-text-full-name,
+body.sig-app .pmpro_form_field-text-fullname,
+body.sig-app .pmpro_form_field:has(input[name="fullname"]),
+body.sig-app .pmpro_form_field:has(input[name="full_name"]),
+body.sig-app .pmpro_form_field:has(input[name="bemail"]),
+body.sig-app input#fullname,
+body.sig-app label[for="fullname"] {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0);
+}
+
+body.sig-app #pmpro_form .pmpro_btn-submit,
+body.sig-app #pmpro_form input[type="submit"],
+body.sig-app .pmpro_form_submit .pmpro_btn,
+body.sig-app #pmpro_submit_span,
+body.sig-app #pmpro_submit_span .pmpro_btn {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 44px !important;
+  height: 44px !important;
+  margin: 12px 0 0 !important;
+  box-sizing: border-box !important;
+}
+
+body.sig-app #pmpro_payment_method,
+body.sig-app .pmpro_checkout_gateway-check,
+body.sig-app .pmpro_payment-check,
+body.sig-app .gateway_check,
+body.sig-app #pmpro_payment_information_fields .pmpro_checkout-field-check {
+  display: none !important;
+}
+
+body.sig-checkout-free .pmpro_level-cost,
+body.sig-checkout-free .pmpro_checkout-price,
+body.sig-checkout-free .pmpro_price,
+body.sig-checkout-free .pmpro_checkout-field-sig_capital,
+body.sig-checkout-free .pmpro_form_field-sig_capital {
+  display: none !important;
+}
+
+html.sig-html[data-theme="light"] .sig-gate .sig-legal,
+html.sig-html[data-theme="light"] .sig-legal {
+  color: #4b5d73;
 }
 
 /* Light theme — same layout, inverted tokens */
