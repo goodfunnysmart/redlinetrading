@@ -729,6 +729,9 @@ body.sig-app a.sig-btn.ghost:focus-visible,
     padding: 10px 12px;
     overflow-x: hidden;
   }
+  .sig-topbar-guest .sig-brand-word {
+    display: none;
+  }
   .sig-brand {
     grid-column: 1;
     min-width: 0;
@@ -1604,7 +1607,6 @@ body.sig-app .pmpro_form_field-text-full-name,
 body.sig-app .pmpro_form_field-text-fullname,
 body.sig-app .pmpro_form_field:has(input[name="fullname"]),
 body.sig-app .pmpro_form_field:has(input[name="full_name"]),
-body.sig-app .pmpro_form_field:has(input[name="bemail"]),
 body.sig-app input#fullname,
 body.sig-app label[for="fullname"] {
   position: absolute !important;
@@ -1629,9 +1631,8 @@ body.sig-app #pmpro_submit_span .pmpro_btn {
   box-sizing: border-box !important;
 }
 
-body.sig-app #pmpro_payment_method {
-  display: none !important;
-}
+body.sig-app .pmpro_payment-check,
+body.sig-app .gateway_check,
 body.sig-app .pmpro_form_fieldset:has(.pmpro_check_instructions),
 body.sig-app .pmpro_form_field.pmpro_check_instructions {
   display: none !important;

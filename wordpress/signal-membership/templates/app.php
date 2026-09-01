@@ -28,9 +28,9 @@ $sig_market_label = (!empty($sig_market['label']) && !empty($sig_market['status'
 ?>
 <body <?php body_class($sig_body); ?>>
 <header class="sig-topbar<?php echo is_user_logged_in() ? '' : ' sig-topbar-guest'; ?>">
-  <a class="sig-brand" href="<?php echo esc_url(SIG_Access::current_is_paid() ? SIG_Access::dashboard_url() : SIG_Access::chart_url()); ?>">
+  <a class="sig-brand" href="<?php echo esc_url(SIG_Access::current_is_paid() ? SIG_Access::dashboard_url() : SIG_Access::chart_url()); ?>" aria-label="Redline">
     <span class="sig-brand-mark" aria-hidden="true"></span>
-    Redline
+    <span class="sig-brand-word">Redline</span>
   </a>
   <nav class="sig-nav">
     <?php if (SIG_Access::current_is_paid()) : ?>
@@ -57,7 +57,7 @@ $sig_market_label = (!empty($sig_market['label']) && !empty($sig_market['status'
       <?php endif; ?>
       <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">Log out</a>
     <?php else : ?>
-      <a class="sig-login-link" href="<?php echo esc_url(wp_login_url(SIG_Access::chart_url())); ?>">Log in</a>
+      <a class="sig-login-link" href="<?php echo esc_url(SIG_Access::login_url(SIG_Access::chart_url())); ?>">Log in</a>
       <a class="sig-btn" href="<?php echo esc_url(SIG_Access::paid_checkout_url()); ?>">Join $19/yr</a>
     <?php endif; ?>
   </div>

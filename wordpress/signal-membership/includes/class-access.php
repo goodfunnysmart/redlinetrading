@@ -56,6 +56,19 @@ class SIG_Access {
         return wp_registration_url();
     }
 
+    public static function login_url($redirect = '') {
+        if (function_exists('pmpro_url')) {
+            $url = pmpro_url('login');
+            if ($url) {
+                if ($redirect) {
+                    $url = add_query_arg('redirect_to', $redirect, $url);
+                }
+                return $url;
+            }
+        }
+        return $redirect ? wp_login_url($redirect) : wp_login_url();
+    }
+
     public static function register_url() {
         $free = self::free_level_id();
         if ($free && function_exists('pmpro_url')) {

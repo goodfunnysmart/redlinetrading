@@ -293,7 +293,7 @@ class SIG_Shortcodes {
     }
 
     public static function gate_html($message, $mode = 'login') {
-        $login = wp_login_url(get_permalink());
+        $login = SIG_Access::login_url(get_permalink());
         $register = SIG_Access::register_url();
         $paid = SIG_Access::paid_checkout_url();
         $html  = '<div class="sig-card sig-gate">';
