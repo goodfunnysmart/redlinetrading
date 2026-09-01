@@ -55,6 +55,47 @@ body.sig-app {
     var(--sig-bg);
 }
 
+/* Original greache.com/redline: XJO.INDX close vs EMA65 (green.png / red.png). */
+body.sig-app.sig-market-bullish {
+  border-top: 6px solid #22c55e;
+  background:
+    linear-gradient(180deg, rgba(34, 197, 94, 0.22) 0%, rgba(34, 197, 94, 0.06) 32%, transparent 58%),
+    radial-gradient(1200px 500px at 10% -10%, rgba(56, 189, 248, 0.08), transparent 50%),
+    radial-gradient(900px 400px at 100% 0%, rgba(129, 140, 248, 0.08), transparent 45%),
+    var(--sig-bg);
+}
+body.sig-app.sig-market-bearish {
+  border-top: 6px solid #ef4444;
+  background:
+    linear-gradient(180deg, rgba(239, 68, 68, 0.22) 0%, rgba(239, 68, 68, 0.06) 32%, transparent 58%),
+    radial-gradient(1200px 500px at 10% -10%, rgba(56, 189, 248, 0.08), transparent 50%),
+    radial-gradient(900px 400px at 100% 0%, rgba(129, 140, 248, 0.08), transparent 45%),
+    var(--sig-bg);
+}
+
+.sig-market-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: var(--sig-muted);
+  border: 1px solid var(--sig-border);
+  background: var(--sig-elev);
+}
+body.sig-market-bullish .sig-market-badge {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #22c55e;
+}
+body.sig-market-bearish .sig-market-badge {
+  background: #fee2e2;
+  color: #991b1b;
+  border-color: #ef4444;
+}
+
 body.sig-app #wpadminbar { display: none !important; }
 body.sig-app.admin-bar { margin-top: 0 !important; padding-top: 0 !important; }
 html.sig-html { margin-top: 0 !important; }
@@ -514,6 +555,14 @@ body.sig-app a.sig-btn.ghost:focus-visible,
 .sig-pill.sell { color: var(--sig-sell); background: var(--sig-sell-bg); }
 .sig-pill.watch { color: var(--sig-watch); background: var(--sig-watch-bg); }
 .sig-pill.none { color: var(--sig-none); background: rgba(100, 116, 139, 0.12); }
+.sig-pill.under {
+  color: #fecaca;
+  background: rgba(159, 18, 57, 0.4);
+  border: 1px solid #e11d48;
+}
+.sig-cell-sig .sig-pill + .sig-pill {
+  margin-left: 4px;
+}
 
 .sig-num { font-family: var(--sig-mono); font-size: 13px; }
 .sig-note { color: var(--sig-muted); font-size: 13px; max-width: 340px; }
@@ -654,8 +703,15 @@ body.sig-app a.sig-btn.ghost:focus-visible,
     justify-content: center;
   }
   .sig-cell-sig {
+    flex-direction: row;
+    flex-wrap: wrap;
     align-items: flex-end;
-    justify-content: center;
+    justify-content: flex-end;
+    gap: 4px;
+  }
+  .sig-market-badge {
+    font-size: 10px;
+    padding: 3px 8px;
   }
   .sig-cell-1d {
     align-items: flex-start;
@@ -1064,6 +1120,27 @@ html.sig-html[data-theme="light"] {
 
 html.sig-html[data-theme="light"] body.sig-app {
   background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(3, 105, 161, 0.08), transparent 50%),
+    radial-gradient(900px 400px at 100% 0%, rgba(129, 140, 248, 0.08), transparent 45%),
+    var(--sig-bg);
+}
+
+html.sig-html[data-theme="light"] .sig-pill.under {
+  color: #9f1239;
+  background: rgba(225, 29, 72, 0.12);
+  border-color: #e11d48;
+}
+
+html.sig-html[data-theme="light"] body.sig-app.sig-market-bullish {
+  background:
+    linear-gradient(180deg, rgba(34, 197, 94, 0.18) 0%, rgba(34, 197, 94, 0.05) 32%, transparent 58%),
+    radial-gradient(1200px 500px at 10% -10%, rgba(3, 105, 161, 0.08), transparent 50%),
+    radial-gradient(900px 400px at 100% 0%, rgba(129, 140, 248, 0.08), transparent 45%),
+    var(--sig-bg);
+}
+html.sig-html[data-theme="light"] body.sig-app.sig-market-bearish {
+  background:
+    linear-gradient(180deg, rgba(239, 68, 68, 0.16) 0%, rgba(239, 68, 68, 0.04) 32%, transparent 58%),
     radial-gradient(1200px 500px at 10% -10%, rgba(3, 105, 161, 0.08), transparent 50%),
     radial-gradient(900px 400px at 100% 0%, rgba(129, 140, 248, 0.08), transparent 45%),
     var(--sig-bg);

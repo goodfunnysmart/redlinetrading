@@ -183,19 +183,45 @@ class SIG_Email {
             }
             $ema65 = isset($q['ema65']) ? (float) $q['ema65'] : 0;
             $ret = isset($q['ret_6m']) ? $q['ret_6m'] : null;
+            $ret_1d = isset($q['ret_1d']) ? $q['ret_1d'] : null;
             list($shares, $value) = self::size_position($capital, $price, $ema65);
+            $ema65_flag = (isset($q['ema65']) && $q['ema65'] !== null && $q['ema65'] !== '') ? (float) $q['ema65'] : null;
             $rows[] = array(
-                'symbol' => $sym,
-                'signal' => $sig,
-                'close'  => $price,
-                'ema65'  => $ema65,
-                'ret_6m' => $ret,
-                'shares' => $shares,
-                'value'  => $value,
-                'href'   => self::chart_href($sym),
+                'symbol'        => $sym,
+                'signal'        => $sig,
+                'close'         => $price,
+                'ema65'         => $ema65,
+                'ret_6m'        => $ret,
+                'ret_1d'        => $ret_1d,
+                'under_redline' => SIG_Signals::is_under_redline($price, $ema65_flag),
+                'shares'        => $shares,
+                'value'         => $value,
+                'href'          => self::chart_href($sym),
             );
         }
         return $rows;
+    }
+
+    public static function greeting_name($user) {
+        if (!$user) {
+            return 'there';
+        }
+        $generic = array('admin', 'webteam', 'codemaster', 'administrator', 'root', 'user');
+        $first = '';
+        if (!empty($user->first_name)) {
+            $first = trim((string) $user->first_name);
+        }
+        if ($first === '' && !empty($user->ID)) {
+            $first = trim((string) get_user_meta((int) $user->ID, 'first_name', true));
+        }
+        if ($first !== '' && !in_array(strtolower($first), $generic, true)) {
+            return $first;
+        }
+        $display = trim((string) $user->display_name);
+        if ($display !== '' && !in_array(strtolower($display), $generic, true)) {
+            return $display;
+        }
+        return 'there';
     }
 
     public static function capital_for($user_id) {
@@ -316,8 +342,13 @@ class SIG_Email {
         $dashboard = SIG_Access::dashboard_url();
         $chart_home = SIG_Access::chart_url();
         ob_start();
-        $name = $user && !empty($user->display_name) ? $user->display_name : 'there';
+        $name = self::greeting_name($user);
         $date = $payload['date'];
+        $capital = isset($payload['capital']) ? (float) $payload['capital'] : 100000;
+        if ($capital < 1000) {
+            $capital = 100000;
+        }
+        $capital_label = '$' . number_format($capital, 0);
         $dreamteam = $payload['dreamteam'];
         $buys = $payload['buys'];
         $sells = $payload['sells'];

@@ -45,4 +45,15 @@ class SIG_Signals {
                 return '';
         }
     }
+
+    /**
+     * Original radar "under redline" flag: latest close below the 65-day EMA.
+     * Same test as redline.php $isBelow65 (📉 when close < EMA65).
+     */
+    public static function is_under_redline($close, $ema65) {
+        if ($close === null || $close === '' || $ema65 === null || $ema65 === '') {
+            return false;
+        }
+        return (float) $close < (float) $ema65;
+    }
 }

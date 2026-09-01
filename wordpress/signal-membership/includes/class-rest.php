@@ -138,13 +138,14 @@ class SIG_REST {
                 $note = SIG_Signals::note($signal);
             }
             $out[] = array(
-                'symbol' => $sym,
-                'signal' => $signal,
-                'close'  => $close,
-                'ema65'  => $ema65,
-                'ret_6m' => isset($q['ret_6m']) ? $q['ret_6m'] : null,
-                'ret_1d' => isset($q['ret_1d']) ? $q['ret_1d'] : null,
-                'note'   => $note,
+                'symbol'        => $sym,
+                'signal'        => $signal,
+                'close'         => $close,
+                'ema65'         => $ema65,
+                'ret_6m'        => isset($q['ret_6m']) ? $q['ret_6m'] : null,
+                'ret_1d'        => isset($q['ret_1d']) ? $q['ret_1d'] : null,
+                'under_redline' => SIG_Signals::is_under_redline($close, $ema65),
+                'note'          => $note,
             );
         }
         usort($out, array('SIG_Cache', 'sort_signal_rows'));
@@ -157,6 +158,7 @@ class SIG_REST {
             'watchlist' => $watchlist,
             'view'      => $view,
             'counts'    => $counts,
+            'market'    => SIG_Cache::market_status(),
             'signals'   => $out,
         ));
     }

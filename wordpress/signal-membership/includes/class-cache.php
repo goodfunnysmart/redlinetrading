@@ -531,4 +531,68 @@ class SIG_Cache {
         }
         return (int) $v;
     }
+
+    /**
+     * ASX market vs 65-day EMA, same meaning as original redline.php
+     * $marketStatusClass from XJO.INDX close vs EMA65 (green.png / red.png).
+     * Prefers quotes cache (CSV at redline/cache/XJO_INDX.csv, transient sig_quotes_v3_*),
+     * then engine DB bars. Does not call EODHD.
+     *
+     * @return array{symbol:string,status:string,label:string,above:?bool,close:?float,ema65:?float}
+     */
+    public static function market_status() {
+        static $once = null;
+        if (is_array($once)) {
+            return $once;
+        }
+        $symbol = 'XJO.INDX';
+        $close = null;
+        $ema65 = null;
+        $got = self::quotes_for(array($symbol));
+        if (isset($got[$symbol]) && is_array($got[$symbol])) {
+            if (isset($got[$symbol]['close']) && $got[$symbol]['close'] !== null && $got[$symbol]['close'] !== '') {
+                $close = (float) $got[$symbol]['close'];
+            }
+            if (isset($got[$symbol]['ema65']) && $got[$symbol]['ema65'] !== null && $got[$symbol]['ema65'] !== '') {
+                $ema65 = (float) $got[$symbol]['ema65'];
+            }
+        }
+        if (($close === null || $ema65 === null) && class_exists('SIG_DB')) {
+            $bars = SIG_DB::bars($symbol);
+            if (!is_wp_error($bars) && $bars) {
+                $closes = array();
+                foreach ($bars as $r) {
+                    if (isset($r['close']) && $r['close'] !== null && $r['close'] !== '') {
+                        $closes[] = (float) $r['close'];
+                    }
+                }
+                $n = count($closes);
+                if ($n >= 65) {
+                    require_once dirname(__FILE__) . '/class-ema.php';
+                    $ribbon = SIG_Ema::ribbon($closes);
+                    $close = $closes[$n - 1];
+                    if (!empty($ribbon[65]) && isset($ribbon[65][$n - 1]) && $ribbon[65][$n - 1] !== null) {
+                        $ema65 = (float) $ribbon[65][$n - 1];
+                    }
+                }
+            }
+        }
+        $status = 'unknown';
+        $label = 'ASX vs EMA65 unavailable';
+        $above = null;
+        if ($close !== null && $ema65 !== null) {
+            $above = ($close > $ema65);
+            $status = $above ? 'bullish' : 'bearish';
+            $label = $above ? 'ASX above EMA65' : 'ASX below EMA65';
+        }
+        $once = array(
+            'symbol' => $symbol,
+            'status' => $status,
+            'label'  => $label,
+            'above'  => $above,
+            'close'  => $close,
+            'ema65'  => $ema65,
+        );
+        return $once;
+    }
 }

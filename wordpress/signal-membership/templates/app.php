@@ -14,12 +14,25 @@ if (!defined('ABSPATH')) {
 </script>
 <?php wp_head(); ?>
 </head>
-<body <?php body_class('sig-app'); ?>>
+<?php
+$sig_market = class_exists('SIG_Cache') ? SIG_Cache::market_status() : array('status' => 'unknown', 'label' => '');
+$sig_body = array('sig-app');
+if (!empty($sig_market['status']) && $sig_market['status'] === 'bullish') {
+    $sig_body[] = 'sig-market-bullish';
+} elseif (!empty($sig_market['status']) && $sig_market['status'] === 'bearish') {
+    $sig_body[] = 'sig-market-bearish';
+}
+$sig_market_label = (!empty($sig_market['label']) && !empty($sig_market['status']) && $sig_market['status'] !== 'unknown')
+    ? (string) $sig_market['label']
+    : '';
+?>
+<body <?php body_class($sig_body); ?>>
 <header class="sig-topbar">
   <a class="sig-brand" href="<?php echo esc_url(SIG_Access::current_is_paid() ? SIG_Access::dashboard_url() : SIG_Access::chart_url()); ?>">
     <span class="sig-brand-mark" aria-hidden="true"></span>
     Redline
   </a>
+  <span class="sig-market-badge" data-market-badge<?php echo $sig_market_label === '' ? ' hidden' : ''; ?>><?php echo esc_html($sig_market_label); ?></span>
   <nav class="sig-nav">
     <?php if (!is_user_logged_in() || SIG_Access::current_is_paid()) : ?>
     <a class="<?php echo SIG_Shortcodes::post_has('sig_dashboard') ? 'is-active' : ''; ?>" href="<?php echo esc_url(SIG_Access::dashboard_url()); ?>">Dashboard</a>

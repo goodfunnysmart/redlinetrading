@@ -214,12 +214,13 @@ class SIG_Shortcodes {
     public static function localize_payload() {
         $symbol = isset($_GET['symbol']) ? SIG_Access::sanitize_symbol(wp_unslash($_GET['symbol'])) : '';
         return array(
-            'rest'     => rest_url('signals/v1/'),
-            'nonce'    => wp_create_nonce('wp_rest'),
+            'rest'        => rest_url('signals/v1/'),
+            'nonce'       => wp_create_nonce('wp_rest'),
             'chartUrl'    => apply_filters('sig_chart_url', home_url('/?pagename=chart')),
             'dashUrl'     => apply_filters('sig_dashboard_url', home_url('/?pagename=dashboard')),
             'profileUrl'  => apply_filters('sig_profile_url', home_url('/?pagename=profile')),
             'symbol'      => $symbol,
+            'market'      => SIG_Cache::market_status(),
         );
     }
 

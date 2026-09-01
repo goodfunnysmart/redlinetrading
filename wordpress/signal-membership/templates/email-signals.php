@@ -21,49 +21,74 @@ $fmt_pct = function ($n) {
     }
     return $s;
 };
-$badge = function ($sig) {
+$pct_color = function ($n) {
+    if ($n === null || $n === '') {
+        return '#94a3b8';
+    }
+    return ((float) $n >= 0) ? '#4ade80' : '#f87171';
+};
+$pct_span = function ($n) use ($fmt_pct, $pct_color) {
+    $txt = $fmt_pct($n);
+    if ($txt === '—') {
+        return '';
+    }
+    return ' <span style="color:' . $pct_color($n) . ';font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;">' . esc_html($txt) . '</span>';
+};
+$badge = function ($sig, $under = false) {
     $sig = strtolower((string) $sig);
+    $under_html = $under
+        ? '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#9f1239;color:#fecaca;font-size:10px;font-weight:700;letter-spacing:.06em;">UNDER</span>'
+        : '';
     if ($sig === 'buy') {
-        return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#22c55e;color:#052e16;font-size:10px;font-weight:700;letter-spacing:.06em;">BUY</span>';
+        $main = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#22c55e;color:#052e16;font-size:10px;font-weight:700;letter-spacing:.06em;">BUY</span>';
+        return $under ? ($main . ' ' . $under_html) : $main;
     }
     if ($sig === 'sell') {
-        return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;">SELL</span>';
+        $main = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;">SELL</span>';
+        return $under ? ($main . ' ' . $under_html) : $main;
     }
     if ($sig === 'watch') {
-        return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#f59e0b;color:#422006;font-size:10px;font-weight:700;letter-spacing:.06em;">WATCH</span>';
+        $main = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#f59e0b;color:#422006;font-size:10px;font-weight:700;letter-spacing:.06em;">WATCH</span>';
+        return $under ? ($main . ' ' . $under_html) : $main;
+    }
+    if ($under) {
+        return $under_html;
     }
     return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#334155;color:#cbd5e1;font-size:10px;font-weight:700;letter-spacing:.06em;">HOLD</span>';
 };
-$row_html = function ($r) use ($fmt_price, $fmt_pct, $badge) {
-    $pct = $fmt_pct(isset($r['ret_6m']) ? $r['ret_6m'] : null);
-    $pct_color = (isset($r['ret_6m']) && (float) $r['ret_6m'] >= 0) ? '#4ade80' : '#f87171';
+$row_html = function ($r) use ($fmt_price, $fmt_pct, $pct_color, $pct_span, $badge) {
+    $ret_1d = isset($r['ret_1d']) ? $r['ret_1d'] : null;
+    $ret_6m = isset($r['ret_6m']) ? $r['ret_6m'] : null;
     $href = isset($r['href']) ? $r['href'] : '#';
     $sym = esc_html($r['symbol']);
     $shares = isset($r['shares']) ? number_format((int) $r['shares']) : '0';
     $value = isset($r['value']) ? '$' . number_format((int) $r['value']) : '—';
-    $pct_next = ($pct !== '—')
-        ? ' <span style="color:' . $pct_color . ';font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;">' . esc_html($pct) . '</span>'
-        : '';
+    $under = !empty($r['under_redline']);
+    $td = 'padding:10px 8px;border-bottom:1px solid #1e293b;';
     return '<tr>'
-        . '<td style="padding:10px 8px;border-bottom:1px solid #1e293b;font-family:Arial,sans-serif;">'
+        . '<td style="' . $td . 'font-family:Arial,sans-serif;">'
         . '<a href="' . esc_url($href) . '" style="color:#7dd3fc;font-weight:700;text-decoration:none;">' . $sym . '</a>'
-        . $pct_next
+        . $pct_span($ret_1d)
+        . $pct_span($ret_6m)
         . '</td>'
-        . '<td style="padding:10px 8px;border-bottom:1px solid #1e293b;">' . $badge(isset($r['signal']) ? $r['signal'] : '') . '</td>'
-        . '<td style="padding:10px 8px;border-bottom:1px solid #1e293b;color:' . $pct_color . ';font-variant-numeric:tabular-nums;">' . esc_html($pct) . '</td>'
-        . '<td style="padding:10px 8px;border-bottom:1px solid #1e293b;color:#e2e8f0;font-variant-numeric:tabular-nums;">' . esc_html($fmt_price(isset($r['close']) ? $r['close'] : null)) . '</td>'
-        . '<td style="padding:10px 8px;border-bottom:1px solid #1e293b;color:#94a3b8;text-align:right;font-variant-numeric:tabular-nums;">' . esc_html($shares) . '</td>'
-        . '<td style="padding:10px 8px;border-bottom:1px solid #1e293b;color:#e2e8f0;text-align:right;font-variant-numeric:tabular-nums;">' . esc_html($value) . '</td>'
+        . '<td style="' . $td . '">' . $badge(isset($r['signal']) ? $r['signal'] : '', $under) . '</td>'
+        . '<td style="' . $td . 'color:' . $pct_color($ret_1d) . ';font-variant-numeric:tabular-nums;">' . esc_html($fmt_pct($ret_1d)) . '</td>'
+        . '<td style="' . $td . 'color:' . $pct_color($ret_6m) . ';font-variant-numeric:tabular-nums;">' . esc_html($fmt_pct($ret_6m)) . '</td>'
+        . '<td style="' . $td . 'color:#e2e8f0;font-variant-numeric:tabular-nums;">' . esc_html($fmt_price(isset($r['close']) ? $r['close'] : null)) . '</td>'
+        . '<td style="' . $td . 'color:#94a3b8;text-align:right;font-variant-numeric:tabular-nums;">' . esc_html($shares) . '</td>'
+        . '<td style="' . $td . 'color:#e2e8f0;text-align:right;font-variant-numeric:tabular-nums;">' . esc_html($value) . '</td>'
         . '</tr>';
 };
 $section = function ($title, $color, $rows, $empty) use ($row_html) {
+    $th = 'padding:8px;color:#64748b;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #1e293b;';
     $head = '<tr>'
-        . '<th align="left" style="padding:8px;color:#64748b;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #1e293b;">Stock</th>'
-        . '<th align="left" style="padding:8px;color:#64748b;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #1e293b;">Signal</th>'
-        . '<th align="left" style="padding:8px;color:#64748b;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #1e293b;">6M</th>'
-        . '<th align="left" style="padding:8px;color:#64748b;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #1e293b;">Price</th>'
-        . '<th align="right" style="padding:8px;color:#64748b;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #1e293b;">Shares</th>'
-        . '<th align="right" style="padding:8px;color:#64748b;font-size:10px;letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid #1e293b;">Value</th>'
+        . '<th align="left" style="' . $th . '">Stock</th>'
+        . '<th align="left" style="' . $th . '">Signal</th>'
+        . '<th align="left" style="' . $th . '">1D</th>'
+        . '<th align="left" style="' . $th . '">6M</th>'
+        . '<th align="left" style="' . $th . '">Price</th>'
+        . '<th align="right" style="' . $th . '">Shares</th>'
+        . '<th align="right" style="' . $th . '">Value</th>'
         . '</tr>';
     $body = '';
     if ($rows) {
@@ -71,13 +96,16 @@ $section = function ($title, $color, $rows, $empty) use ($row_html) {
             $body .= $row_html($r);
         }
     } else {
-        $body = '<tr><td colspan="6" style="padding:12px 8px;color:#64748b;font-style:italic;">' . esc_html($empty) . '</td></tr>';
+        $body = '<tr><td colspan="7" style="padding:12px 8px;color:#64748b;font-style:italic;">' . esc_html($empty) . '</td></tr>';
     }
     return '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px;border:1px solid #1e293b;border-radius:12px;overflow:hidden;background:#0f172a;">'
         . '<tr><td style="padding:12px 14px;background:' . $color . ';color:#0b1220;font-family:Arial,sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;">' . esc_html($title) . '</td></tr>'
         . '<tr><td style="padding:0 8px 8px;"><table width="100%" cellpadding="0" cellspacing="0">' . $head . $body . '</table></td></tr>'
         . '</table>';
 };
+if (!isset($capital_label)) {
+    $capital_label = '$100,000';
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -100,7 +128,7 @@ $section = function ($title, $color, $rows, $empty) use ($row_html) {
         </tr>
         <tr>
           <td style="padding:24px 28px 8px;font-family:Arial,sans-serif;">
-            <p style="margin:0 0 18px;color:#cbd5e1;font-size:14px;line-height:1.55;">Your Dreamteam first, then today's market BUY, SELL and WATCH. Tap a ticker to open the chart on Redline. This is not the full universe.</p>
+            <p style="margin:0 0 18px;color:#cbd5e1;font-size:14px;line-height:1.55;">Your Dreamteam first, then today's market BUY, SELL and WATCH. Position sizes below are sizing off <?php echo esc_html($capital_label); ?>. Tap a ticker to open the chart on Redline. This is not the full universe.</p>
             <?php
             echo $section('Dreamteam', '#38bdf8', $dreamteam, 'No symbols in your Dreamteam yet. Add some from the dashboard.');
             echo $section('Buy', '#22c55e', $buys, 'No buy signals today.');

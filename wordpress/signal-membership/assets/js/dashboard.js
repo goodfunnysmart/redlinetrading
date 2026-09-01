@@ -135,9 +135,38 @@
     return '';
   }
 
-  function pill(signal) {
-    var s = signal || 'none';
-    return '<span class="sig-pill ' + s + '">' + s + '</span>';
+  function pill(signal, under) {
+    var s = String(signal || 'none').toLowerCase();
+    var mark = under ? ' <span class="sig-pill under">UNDER</span>' : '';
+    if (s === 'buy' || s === 'sell' || s === 'watch') {
+      return '<span class="sig-pill ' + s + '">' + s + '</span>' + mark;
+    }
+    if (under) {
+      return '<span class="sig-pill under">UNDER</span>';
+    }
+    return '<span class="sig-pill none">none</span>';
+  }
+
+  function applyMarket(m) {
+    m = m || {};
+    var b = document.body;
+    if (b) {
+      b.classList.remove('sig-market-bullish', 'sig-market-bearish');
+      if (m.status === 'bullish') {
+        b.classList.add('sig-market-bullish');
+      } else if (m.status === 'bearish') {
+        b.classList.add('sig-market-bearish');
+      }
+    }
+    var label = (m.status && m.status !== 'unknown' && m.label) ? String(m.label) : '';
+    document.querySelectorAll('[data-market-badge]').forEach(function (el) {
+      el.textContent = label;
+      if (label) {
+        el.removeAttribute('hidden');
+      } else {
+        el.setAttribute('hidden', '');
+      }
+    });
   }
 
   function chartLink(symbol) {
@@ -297,7 +326,8 @@
     if (q) {
       rows = rows.filter(function (r) {
         return String(r.symbol || '').toUpperCase().indexOf(q) !== -1
-          || String(r.signal || '').toUpperCase().indexOf(q) !== -1;
+          || String(r.signal || '').toUpperCase().indexOf(q) !== -1
+          || (r.under_redline && q.indexOf('UNDER') !== -1);
       });
     }
     if (!rows.length) {
@@ -326,7 +356,7 @@
       return (
         '<tr>' +
           '<td class="sig-cell-sym" data-label="Symbol"><a class="sig-sym" href="' + chartLink(sym) + '">' + escapeHtml(sym) + '</a></td>' +
-          '<td class="sig-cell-sig" data-label="Signal">' + pill(r.signal) + '</td>' +
+          '<td class="sig-cell-sig" data-label="Signal">' + pill(r.signal, !!r.under_redline) + '</td>' +
           '<td class="sig-cell-1d sig-num' + retClass(r.ret_1d) + '" data-label="1D %">' + escapeHtml(fmtRet(r.ret_1d)) + '</td>' +
           '<td class="sig-cell-ret sig-num' + retClass(r.ret_6m) + '" data-label="6M %">' + escapeHtml(fmtRet(r.ret_6m)) + '</td>' +
           '<td class="sig-cell-px sig-num" data-label="Price">' + escapeHtml(fmtPrice(r.close)) + '</td>' +
@@ -356,6 +386,9 @@
       state.signals = data.signals || [];
       if (data.counts && typeof data.counts === 'object') {
         state.counts = data.counts;
+      }
+      if (data.market) {
+        applyMarket(data.market);
       }
       render();
     }).catch(function (e) {
@@ -545,6 +578,9 @@
     });
   }, true);
 
+  if (cfg.market) {
+    applyMarket(cfg.market);
+  }
   loadProfile();
   load();
   loadUniverse();
