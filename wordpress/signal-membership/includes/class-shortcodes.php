@@ -220,6 +220,7 @@ class SIG_Shortcodes {
             'dashUrl'     => apply_filters('sig_dashboard_url', home_url('/?pagename=dashboard')),
             'profileUrl'  => apply_filters('sig_profile_url', home_url('/?pagename=profile')),
             'symbol'      => $symbol,
+            'isPaid'      => SIG_Access::current_is_paid(),
             'market'      => SIG_Cache::market_status(),
         );
     }

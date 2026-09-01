@@ -838,6 +838,200 @@ button.sig-stat {
   gap: 8px;
 }
 
+.sig-main:has(#sig-chart-page) {
+  max-width: 1440px;
+}
+
+.sig-chart-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.sig-chart-sidebar {
+  background: var(--sig-card);
+  border: 1px solid var(--sig-border-soft);
+  border-radius: var(--sig-radius);
+  box-shadow: var(--sig-shadow);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 780px;
+  overflow: hidden;
+}
+
+.sig-chart-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 6px;
+  color: var(--sig-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sig-chart-list-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 10px 8px;
+}
+
+.sig-chart-list-tabs .sig-chip {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.sig-chart-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 4px 8px 10px;
+}
+
+.sig-chart-row {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin: 0 0 2px;
+  padding: 6px 8px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.sig-chart-row:hover {
+  background: var(--sig-card-hover);
+}
+
+.sig-chart-row.is-current {
+  background: var(--sig-card-hover);
+  border-color: var(--sig-accent);
+}
+
+.sig-chart-row .sig-sym {
+  font-size: 80%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sig-chart-row-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.sig-chart-row .sig-pill {
+  padding: 2px 7px;
+  font-size: 10px;
+  gap: 4px;
+}
+
+.sig-chart-row .sig-pill::before {
+  width: 5px;
+  height: 5px;
+}
+
+.sig-chart-empty {
+  margin: 0;
+  padding: 16px 10px 20px;
+  color: var(--sig-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.sig-chart-empty a {
+  color: var(--sig-accent);
+  text-decoration: none;
+}
+
+.sig-chart-empty a:hover {
+  text-decoration: underline;
+}
+
+.sig-list-btn,
+.sig-chart-drawer-close,
+.sig-chart-drawer-backdrop {
+  display: none;
+}
+
+.sig-chart-col {
+  min-width: 0;
+}
+
+.sig-chart-col .sig-legal {
+  margin-top: 16px;
+}
+
+@media (max-width: 720px) {
+  .sig-chart-layout {
+    display: block;
+  }
+  .sig-list-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+  .sig-chart-drawer-close {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--sig-border);
+    background: transparent;
+    color: var(--sig-text);
+    font: 600 12px var(--sig-sans);
+    cursor: pointer;
+  }
+  .sig-chart-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(280px, 86vw);
+    max-height: none;
+    height: 100%;
+    z-index: 40;
+    border-radius: 0;
+    transform: translateX(-110%);
+    transition: transform 0.2s ease;
+  }
+  #sig-chart-page.is-drawer-open .sig-chart-sidebar {
+    transform: translateX(0);
+  }
+  .sig-chart-drawer-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: rgba(2, 6, 23, 0.55);
+    cursor: pointer;
+  }
+  #sig-chart-page.is-drawer-open .sig-chart-drawer-backdrop {
+    display: block;
+  }
+}
+
+
 .sig-sizing {
   display: flex;
   flex-wrap: wrap;
@@ -1150,4 +1344,8 @@ html.sig-html[data-theme="light"] body.sig-app.sig-market-bearish {
 
 html.sig-html[data-theme="light"] .sig-chip.is-on {
   color: #f8fafc;
+}
+
+html.sig-html[data-theme="light"] .sig-chart-drawer-backdrop {
+  background: rgba(15, 23, 42, 0.35);
 }
