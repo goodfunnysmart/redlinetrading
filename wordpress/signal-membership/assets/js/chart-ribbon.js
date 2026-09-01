@@ -364,10 +364,21 @@
       lastValueVisible: true,
       priceFormat: { type: 'price', precision: 1, minMove: 0.1 },
       autoscaleInfoProvider: function () {
-        return { priceRange: { minValue: 0, maxValue: 100 } };
+        return {
+          priceRange: { minValue: 0, maxValue: 100 },
+          margins: { above: 0, below: 0 }
+        };
       }
     }, 1);
     series.setData(data);
+    try {
+      series.priceScale().applyOptions({
+        autoScale: true,
+        scaleMargins: { top: 0, bottom: 0 }
+      });
+    } catch (err) {
+      /* price scale options are optional */
+    }
     series.createPriceLine({
       price: 70,
       color: 'rgba(239, 68, 68, 0.55)',

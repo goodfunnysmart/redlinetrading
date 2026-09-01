@@ -600,11 +600,25 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   height: 680px;
 }
 
+#sig-chart-status.sig-msg {
+  padding: 0;
+  margin: 0 0 8px;
+  text-align: left;
+  min-height: 0;
+}
+#sig-chart-status:empty {
+  display: none;
+  margin: 0;
+}
+#sig-chart-status.sig-error:not(:empty) {
+  padding: 8px 0;
+}
+
 .sig-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  padding: 12px 8px 4px;
+  padding: 0 8px 8px;
   color: var(--sig-muted);
   font-size: 12px;
 }
@@ -830,7 +844,7 @@ button.sig-stat {
   gap: 12px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .sig-chart-mode {
