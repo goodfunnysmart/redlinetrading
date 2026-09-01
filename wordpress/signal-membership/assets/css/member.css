@@ -1629,12 +1629,29 @@ body.sig-app #pmpro_submit_span .pmpro_btn {
   box-sizing: border-box !important;
 }
 
-body.sig-app #pmpro_payment_method,
-body.sig-app .pmpro_checkout_gateway-check,
-body.sig-app .pmpro_payment-check,
-body.sig-app .gateway_check,
-body.sig-app #pmpro_payment_information_fields .pmpro_checkout-field-check {
+body.sig-app #pmpro_payment_method {
   display: none !important;
+}
+body.sig-app .pmpro_form_fieldset:has(.pmpro_check_instructions),
+body.sig-app .pmpro_form_field.pmpro_check_instructions {
+  display: none !important;
+}
+body.sig-app .pmpro_card_actions {
+  background: var(--sig-card) !important;
+  color: var(--sig-muted) !important;
+  border-top: 1px solid var(--sig-border) !important;
+  box-shadow: none !important;
+}
+body.sig-app .pmpro_hidden,
+body.sig-app .pmpro_hidden label,
+body.sig-app .pmpro_hidden input,
+body.sig-app .pmpro_hidden strong {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0);
 }
 
 body.sig-checkout-free .pmpro_level-cost,

@@ -10,7 +10,6 @@ class SIG_Pmpro_Fields {
         add_filter('the_title', array(__CLASS__, 'free_checkout_title'), 20, 2);
         add_filter('document_title_parts', array(__CLASS__, 'free_document_title'));
         add_filter('pmpro_level_cost_text', array(__CLASS__, 'free_cost_text'), 20, 2);
-        add_filter('pmpro_valid_gateways', array(__CLASS__, 'drop_empty_check_gateway'));
         add_filter('body_class', array(__CLASS__, 'body_class'));
         register_meta('user', 'sig_capital', array(
             'type'              => 'number',
@@ -87,13 +86,6 @@ class SIG_Pmpro_Fields {
             return $cost;
         }
         return '';
-    }
-
-    public static function drop_empty_check_gateway($gateways) {
-        if (!is_array($gateways)) {
-            return $gateways;
-        }
-        return array_values(array_diff($gateways, array('check')));
     }
 
     public static function meta_auth($allowed, $meta_key, $object_id, $user_id, $cap, $caps) {
