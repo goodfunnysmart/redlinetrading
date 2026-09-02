@@ -4,9 +4,11 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Weekday EODHD writer. Batches of 25. Australia/Brisbane, cutoff 17:30.
- * Hooked to WP-Cron (sig_writer_tick every 15 minutes). Real host crontab
- * must hit wp-cron.php — the site already has a every-15-minutes hit for the 18:00 email.
+ * Weekday EODHD writer. Australia/Brisbane, cutoff 17:30.
+ * After cutoff, one sig_writer_tick (or manual run) processes remaining
+ * core then extras in this process — CLI-style, no 25-per-15-minutes.
+ * BATCH=25 is only an inner persist chunk. Hooked to WP-Cron
+ * (sig_writer_tick every 15 minutes) so a host crontab can wake it.
  * NEVER invoked from member page load or REST chart/dashboard.
  *
  * Park the engine mailer To: mail@greache.com / Steve when this writer is
@@ -17,7 +19,6 @@ class SIG_Writer {
     const BATCH = 25;
     const READY_N = 3;
     const LOG_MAX = 30;
-    const TICK_BUDGET = 90;
 
     public static function init() {
         add_action('init', array(__CLASS__, 'schedule'), 31);
@@ -200,6 +201,7 @@ class SIG_Writer {
 
     /**
      * WP-Cron weekday tick. Respects writer on/off and 17:30 cutoff.
+     * Before cutoff (weekday): small extras only. After cutoff: remaining core + extras.
      */
     public static function tick() {
         if (!self::enabled()) {
@@ -237,6 +239,8 @@ class SIG_Writer {
 
     /**
      * @param bool $force ignore weekday/cutoff (admin manual).
+     * One invocation finishes remaining core then extras (CLI-style).
+     * BATCH is only an inner persist chunk — do not return after 25.
      */
     public static function run_batch($force = false) {
         if (!self::enabled() && !$force) {
@@ -246,7 +250,8 @@ class SIG_Writer {
             self::log('No API key; batch skipped.', 'error');
             return array('ok' => false, 'reason' => 'no key');
         }
-        @set_time_limit(self::TICK_BUDGET + 30);
+        @ignore_user_abort(true);
+        @set_time_limit(0);
         $started = time();
         $now = self::brisbane_now();
         $snap = self::session_snapshot($now);
@@ -272,11 +277,7 @@ class SIG_Writer {
 
         $did = 0;
         $errors = 0;
-        $chunk = array_slice($todo, 0, self::BATCH);
-        foreach ($chunk as $sym) {
-            if ((time() - $started) > self::TICK_BUDGET) {
-                break;
-            }
+        foreach ($todo as $sym) {
             $row = self::fetch_and_store($sym, true);
             $snap = self::snapshot();
             if (empty($snap['processed']) || !is_array($snap['processed'])) {
@@ -319,17 +320,10 @@ class SIG_Writer {
             }
         }
 
-        $extra_did = 0;
-        if ((time() - $started) < self::TICK_BUDGET) {
-            $left = self::BATCH - $did;
-            if ($left < 3) {
-                $left = 5;
-            }
-            $extra_did = self::process_extras($left, $started);
-        }
+        $extra_did = self::process_extras(0, $started);
 
         self::log(sprintf(
-            'Batch: %d core, %d extras, %d errors, %d remaining core.',
+            'Run: %d core, %d extras, %d errors, %d remaining core.',
             $did,
             $extra_did,
             $errors,
@@ -397,7 +391,10 @@ class SIG_Writer {
         }
     }
 
-    public static function process_extras($limit = 25, $started = 0) {
+    /**
+     * @param int $limit 0 = all remaining extras (night run). Positive = cap (pre-cutoff small fetch).
+     */
+    public static function process_extras($limit = 0, $started = 0) {
         if (!self::enabled() || !SIG_EODHD::has_key()) {
             return 0;
         }
@@ -407,7 +404,7 @@ class SIG_Writer {
         $wanted = array_values(array_unique(array_merge(self::extra_queue(), SIG_Universe::all_member_extras())));
         $n = 0;
         foreach ($wanted as $sym) {
-            if ($n >= $limit || (time() - $started) > self::TICK_BUDGET) {
+            if ($limit > 0 && $n >= $limit) {
                 break;
             }
             if (self::fetch_and_store($sym, false)) {
