@@ -1202,11 +1202,18 @@ button.sig-stat {
   border-color: var(--sig-accent);
 }
 
-.sig-chart-row .sig-add-row {
-  flex: 0 0 auto;
+.sig-chart-row .sig-add-row,
+.sig-chart-add-slot {
+  flex: 0 0 44px;
+  width: 44px;
   height: 28px;
-  padding: 0 8px;
+  padding: 0;
   font-size: 11px;
+  box-sizing: border-box;
+}
+.sig-chart-add-slot {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .sig-chart-row .sig-sym {

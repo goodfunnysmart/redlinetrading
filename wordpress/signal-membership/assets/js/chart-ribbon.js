@@ -709,8 +709,12 @@
     listEl.innerHTML = rows.map(function (row) {
       var sym = String(row.symbol || '').toUpperCase();
       var add = '';
-      if (state.list !== 'dreamteam' && !inDreamteam(sym)) {
-        add = '<button type="button" class="sig-add-row" data-add="' + escapeHtml(sym) + '">Add</button>';
+      if (state.list !== 'dreamteam') {
+        if (inDreamteam(sym)) {
+          add = '<span class="sig-chart-add-slot" aria-hidden="true"></span>';
+        } else {
+          add = '<button type="button" class="sig-add-row" data-add="' + escapeHtml(sym) + '">Add</button>';
+        }
       }
       return '<div class="sig-chart-row" role="option" data-sym="' + escapeHtml(sym) + '" aria-selected="false">' +
         '<button type="button" class="sig-chart-row-main" data-open-sym="' + escapeHtml(sym) + '">' +
