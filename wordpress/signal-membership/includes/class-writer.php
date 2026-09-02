@@ -4,7 +4,7 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Weekday EODHD writer. Batches of 25. Australia/Brisbane, cutoff 16:45.
+ * Weekday EODHD writer. Batches of 25. Australia/Brisbane, cutoff 17:30.
  * Hooked to WP-Cron (sig_writer_tick every 15 minutes). Real host crontab
  * must hit wp-cron.php — the site already has a every-15-minutes hit for the 18:00 email.
  * NEVER invoked from member page load or REST chart/dashboard.
@@ -48,7 +48,7 @@ class SIG_Writer {
 
     public static function cutoff_time() {
         $now = self::brisbane_now();
-        $cutoff = DateTime::createFromFormat('Y-m-d H:i:s', $now->format('Y-m-d') . ' 16:45:00', $now->getTimezone());
+        $cutoff = DateTime::createFromFormat('Y-m-d H:i:s', $now->format('Y-m-d') . ' 17:30:00', $now->getTimezone());
         if (!$cutoff) {
             return $now->getTimestamp();
         }
@@ -61,7 +61,7 @@ class SIG_Writer {
     public static function after_writer_window($now = null) {
         $now = $now ? $now : self::brisbane_now();
         $minutes = ((int) $now->format('G') * 60) + (int) $now->format('i');
-        return $minutes >= (16 * 60 + 45);
+        return $minutes >= (17 * 60 + 30);
     }
 
     public static function is_weekday($now = null) {
@@ -199,7 +199,7 @@ class SIG_Writer {
     }
 
     /**
-     * WP-Cron weekday tick. Respects writer on/off and 16:45 cutoff.
+     * WP-Cron weekday tick. Respects writer on/off and 17:30 cutoff.
      */
     public static function tick() {
         if (!self::enabled()) {

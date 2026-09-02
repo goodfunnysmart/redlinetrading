@@ -123,7 +123,7 @@ class SIG_Admin {
 
         echo '<tr><th>Writer</th><td>';
         echo '<input type="hidden" name="sig_writer_enabled" value="0" />';
-        echo '<label><input type="checkbox" name="sig_writer_enabled" value="1" ' . checked(1, SIG_Writer::enabled() ? 1 : 0, false) . '> Fetch EODHD on WP-Cron (weekdays after 16:45 Brisbane, batches of 25)</label>';
+        echo '<label><input type="checkbox" name="sig_writer_enabled" value="1" ' . checked(1, SIG_Writer::enabled() ? 1 : 0, false) . '> Fetch EODHD on WP-Cron (weekdays after 17:30 Brisbane, batches of 25)</label>';
         echo '</td></tr>';
 
         echo '<tr><th><label for="sig_eodhd_api_key_enc">EODHD API key</label></th><td>';
@@ -145,9 +145,9 @@ class SIG_Admin {
 
         echo '<hr><h2>Weekday radar email</h2>';
         echo '<p>Paid members get Dreamteam + BUY / SELL / WATCH at 6:00pm Brisbane, once tonight\'s snapshot is in. Tickers link to the membership charts. The full universe is not included. Snapshot and those BUY/SELL/WATCH lists stay on the core 280.</p>';
-        echo '<p>WordPress events: <code>sig_email_send</code> at 6:00pm Brisbane daily, plus <code>sig_email_tick</code> every 15 minutes as a catch-up after 6pm. Writer event: <code>sig_writer_tick</code> on the same 15-minute schedule (weekdays after 16:45 Brisbane). Both still need WP-Cron to be woken by a real cPanel cron hitting <code>wp-cron.php</code>.</p>';
+        echo '<p>WordPress events: <code>sig_email_send</code> at 6:00pm Brisbane daily, plus <code>sig_email_tick</code> every 15 minutes as a catch-up after 6pm. Writer event: <code>sig_writer_tick</code> on the same 15-minute schedule (weekdays after 17:30 Brisbane). Both still need WP-Cron to be woken by a real cPanel cron hitting <code>wp-cron.php</code>.</p>';
         echo '<p>cPanel cron (already in use for the 18:00 email), every 15 minutes: <code>wget -q -O - "https://greache.com/redlinetrading/wp-cron.php?doing_wp_cron" &gt;/dev/null 2&gt;&amp;1</code></p>';
-        echo '<p>Optional extra weekday line around 17:15 if you want a dedicated kick: <code>15 17 * * 1-5 wget -q -O - "https://greache.com/redlinetrading/wp-cron.php?doing_wp_cron" &gt;/dev/null 2&gt;&amp;1</code> — not required if */15 is already running.</p>';
+        echo '<p>Optional extra weekday line around 17:30 if you want a dedicated kick: <code>30 17 * * 1-5 wget -q -O - "https://greache.com/redlinetrading/wp-cron.php?doing_wp_cron" &gt;/dev/null 2&gt;&amp;1</code> — not required if */15 is already running.</p>';
         echo '<div class="notice notice-warning inline"><p><strong>Do not double-send.</strong> Plugin Dreamteam is the only member email. Park the engine mailer To: <code>mail@greache.com</code> / Steve (comment it out or stop that cron) when you are ready — do not leave both firing. Leave the live /redline/ price cron running until you explicitly say to stop it. This screen does not edit the host.</p></div>';
         $uid = SIG_Email::preview_user_id();
         $dest = get_userdata($uid);
