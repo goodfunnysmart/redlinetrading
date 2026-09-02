@@ -399,18 +399,67 @@
     });
   }
 
-  function loadUniverse() {
-    return api('universe').then(function (data) {
-      state.universe = data.symbols || [];
-      var list = document.getElementById('sig-universe');
-      if (list) {
-        list.innerHTML = state.universe.map(function (s) {
-          return '<option value="' + escapeHtml(s) + '">';
-        }).join('');
-      }
-    }).catch(function () {
-      /* optional */
-    });
+  function hideSuggest() {
+    var box = root.querySelector('[data-suggest]');
+    if (box) {
+      box.hidden = true;
+      box.innerHTML = '';
+    }
+  }
+
+  function fillSymbol(sym) {
+    var form = root.querySelector('[data-add-form]');
+    var input = form && form.querySelector('input[name="symbol"]');
+    if (input) {
+      input.value = sym;
+      input.focus();
+    }
+    hideSuggest();
+  }
+
+  function renderSuggest(rows) {
+    var box = root.querySelector('[data-suggest]');
+    if (!box) {
+      return;
+    }
+    rows = rows || [];
+    if (!rows.length) {
+      hideSuggest();
+      return;
+    }
+    box.innerHTML = rows.map(function (r) {
+      var sym = escapeHtml(r.symbol || '');
+      var name = escapeHtml(r.name || '');
+      return '<li><button type="button" data-pick="' + sym + '"><strong>' + sym + '</strong><span class="sig-suggest-name">' + name + '</span></button></li>';
+    }).join('');
+    box.hidden = false;
+  }
+
+  var searchTimer = null;
+  var searchSeq = 0;
+  function onAddInput(val) {
+    val = String(val || '').trim();
+    if (searchTimer) {
+      clearTimeout(searchTimer);
+    }
+    if (val.length < 2) {
+      hideSuggest();
+      return;
+    }
+    searchTimer = setTimeout(function () {
+      var seq = ++searchSeq;
+      api('symbol-search', { query: { q: val } }).then(function (data) {
+        if (seq !== searchSeq) {
+          return;
+        }
+        renderSuggest((data && data.results) || []);
+      }).catch(function () {
+        if (seq !== searchSeq) {
+          return;
+        }
+        hideSuggest();
+      });
+    }, 220);
   }
 
   function loadProfile() {
@@ -536,8 +585,23 @@
 
   var form = root.querySelector('[data-add-form]');
   if (form) {
+    var addInput = form.querySelector('input[name="symbol"]');
+    if (addInput) {
+      addInput.addEventListener('input', function () {
+        onAddInput(addInput.value);
+      });
+      addInput.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Escape') {
+          hideSuggest();
+        }
+      });
+      addInput.addEventListener('blur', function () {
+        setTimeout(hideSuggest, 180);
+      });
+    }
     form.addEventListener('submit', function (ev) {
       ev.preventDefault();
+      hideSuggest();
       var input = form.querySelector('input[name="symbol"]');
       var symbol = (input && input.value || '').trim().toUpperCase();
       if (!symbol) {
@@ -557,6 +621,15 @@
       });
     });
   }
+
+  root.addEventListener('mousedown', function (ev) {
+    var pick = ev.target.closest('[data-pick]');
+    if (!pick) {
+      return;
+    }
+    ev.preventDefault();
+    fillSymbol(pick.getAttribute('data-pick') || '');
+  });
 
   function addMany(list) {
     var i = 0;
@@ -597,5 +670,4 @@
   }
   loadProfile();
   load();
-  loadUniverse();
 })();

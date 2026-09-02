@@ -214,13 +214,34 @@ class SIG_Writer {
         $now = self::brisbane_now();
         if (!self::is_weekday($now)) {
             self::process_extras(self::BATCH);
+            self::maybe_refresh_symbols();
             return;
         }
         if (!$now || !self::after_writer_window($now)) {
             self::process_extras(min(5, self::BATCH));
+            self::maybe_refresh_symbols();
             return;
         }
         self::run_batch(false);
+    }
+
+    /**
+     * Weekly/nightly prefetch of EODHD exchange-symbol-list into wp_sig_eodhd_symbols.
+     * Skips if the table is fresh. Never logs the token.
+     */
+    protected static function maybe_refresh_symbols() {
+        if (!class_exists('SIG_Symbol_Catalog')) {
+            return;
+        }
+        $r = SIG_Symbol_Catalog::maybe_refresh(false);
+        if (!empty($r['skipped'])) {
+            return;
+        }
+        if (!empty($r['ok'])) {
+            self::log('Symbol list: ' . (int) $r['count'] . ' tickers.');
+        } elseif (!empty($r['reason'])) {
+            self::log('Symbol list refresh failed: ' . $r['reason'], 'warn');
+        }
     }
 
     public static function fetch_one_extra($symbol) {
@@ -321,6 +342,8 @@ class SIG_Writer {
         }
 
         $extra_did = self::process_extras(0, $started);
+
+        self::maybe_refresh_symbols();
 
         self::log(sprintf(
             'Run: %d core, %d extras, %d errors, %d remaining core.',

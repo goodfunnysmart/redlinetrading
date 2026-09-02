@@ -384,6 +384,50 @@ html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-moon { display: bloc
   gap: 8px;
 }
 
+.sig-add-wrap {
+  position: relative;
+  min-width: 0;
+}
+.sig-suggest {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  top: 44px;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background: var(--sig-elev);
+  border: 1px solid var(--sig-border);
+  border-radius: 10px;
+  max-height: 240px;
+  overflow: auto;
+}
+.sig-suggest[hidden] { display: none; }
+.sig-suggest button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: var(--sig-text);
+  padding: 8px 12px;
+  font: 500 13px var(--sig-sans);
+  cursor: pointer;
+  height: auto;
+  border-radius: 0;
+}
+.sig-suggest button:hover,
+.sig-suggest button.is-on {
+  background: var(--sig-card);
+}
+.sig-suggest-name {
+  color: var(--sig-muted);
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+
 .sig-add input,
 .sig-add button,
 .sig-btn {

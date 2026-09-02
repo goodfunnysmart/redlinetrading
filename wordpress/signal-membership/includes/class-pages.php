@@ -9,6 +9,9 @@ class SIG_Pages {
         if (class_exists('SIG_Store')) {
             SIG_Store::install();
         }
+        if (class_exists('SIG_Symbol_Catalog')) {
+            SIG_Symbol_Catalog::install();
+        }
         $dash = self::ensure_page('dashboard', 'Dashboard', '[sig_dashboard]');
         self::ensure_page('chart', 'Chart', '[sig_chart]');
         self::ensure_page('profile', 'Profile', '[sig_profile]');

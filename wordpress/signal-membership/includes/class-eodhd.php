@@ -153,4 +153,83 @@ class SIG_EODHD {
         $rows = SIG_Cache::parse_csv($csv);
         return !empty($rows);
     }
+
+    /**
+     * Exchange symbol list. Writer/admin only. Never log the URL (token).
+     * GET https://eodhd.com/api/exchange-symbol-list/{EXCHANGE}?api_token=&fmt=json
+     * Returns rows: symbol (Code.EXCHANGE), code, name, exchange, type.
+     * For US composite, suffix is always .US (not NYSE/NASDAQ venue).
+     *
+     * @return array|WP_Error
+     */
+    public static function fetch_exchange_symbol_list($exchange) {
+        $exchange = strtoupper(preg_replace('/[^A-Z0-9]/', '', (string) $exchange));
+        $allowed = array('AU' => true, 'US' => true, 'LSE' => true, 'TO' => true, 'T' => true, 'CC' => true);
+        if ($exchange === '' || !isset($allowed[$exchange])) {
+            return new WP_Error('sig_eodhd_ex', 'Unknown exchange.');
+        }
+        $token = self::api_key();
+        if ($token === '') {
+            return new WP_Error('sig_eodhd_key', 'EODHD API key is not set.');
+        }
+        $url = 'https://eodhd.com/api/exchange-symbol-list/' . rawurlencode($exchange)
+            . '?api_token=' . rawurlencode($token)
+            . '&fmt=json';
+        $res = wp_remote_get($url, array(
+            'timeout'     => 90,
+            'sslverify'   => true,
+            'redirection' => 3,
+            'headers'     => array('Accept' => 'application/json'),
+        ));
+        if (is_wp_error($res)) {
+            return new WP_Error('sig_eodhd_http', 'EODHD symbol-list request failed for ' . $exchange);
+        }
+        $code = (int) wp_remote_retrieve_response_code($res);
+        $body = (string) wp_remote_retrieve_body($res);
+        if ($code !== 200) {
+            return new WP_Error('sig_eodhd_http', 'EODHD HTTP ' . $code . ' for ' . $exchange . ' symbol list');
+        }
+        if (stripos($body, 'Unauthorized') !== false || stripos($body, 'Invalid API') !== false) {
+            return new WP_Error('sig_eodhd_auth', 'EODHD rejected the API key.');
+        }
+        $json = json_decode($body, true);
+        if (!is_array($json)) {
+            return new WP_Error('sig_eodhd_json', 'Bad symbol-list JSON for ' . $exchange);
+        }
+        $out = array();
+        $seen = array();
+        foreach ($json as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $code_s = isset($row['Code']) ? $row['Code'] : (isset($row['code']) ? $row['code'] : '');
+            $name = isset($row['Name']) ? $row['Name'] : (isset($row['name']) ? $row['name'] : '');
+            $type = isset($row['Type']) ? $row['Type'] : (isset($row['type']) ? $row['type'] : '');
+            $code_s = strtoupper(trim((string) $code_s));
+            $name = trim((string) $name);
+            $type = trim((string) $type);
+            if ($code_s === '') {
+                continue;
+            }
+            $symbol = SIG_Access::sanitize_symbol($code_s . '.' . $exchange);
+            if ($symbol === '') {
+                continue;
+            }
+            if (isset($seen[$symbol])) {
+                continue;
+            }
+            $seen[$symbol] = true;
+            $dot = strrpos($symbol, '.');
+            $code_part = ($dot === false) ? $symbol : substr($symbol, 0, $dot);
+            $out[] = array(
+                'symbol'   => $symbol,
+                'code'     => substr($code_part, 0, 24),
+                'name'     => substr($name, 0, 191),
+                'exchange' => $exchange,
+                'type'     => substr($type, 0, 64),
+            );
+        }
+        return $out;
+    }
+
 }

@@ -18,17 +18,49 @@ class SIG_Universe {
         if (is_array(self::$core)) {
             return self::$core;
         }
+        $opt = get_option('sig_core_symbols', array());
+        if (is_array($opt) && count($opt) > 0) {
+            $list = $opt;
+        } else {
+            $list = self::file_default();
+        }
+        self::$core = self::normalize_list($list);
+        return self::$core;
+    }
+
+    public static function file_default() {
         require_once dirname(__FILE__) . '/symbols-core.php';
-        $list = function_exists('sig_core_symbols') ? sig_core_symbols() : array();
+        return function_exists('sig_core_symbols') ? sig_core_symbols() : array();
+    }
+
+    public static function normalize_list($list) {
         $out = array();
         foreach ((array) $list as $raw) {
             $sym = SIG_Access::sanitize_symbol($raw);
-            if ($sym !== '') {
+            if ($sym !== '' && $sym !== self::XJO) {
                 $out[] = $sym;
             }
         }
-        self::$core = array_values(array_unique($out));
-        return self::$core;
+        return array_values(array_unique($out));
+    }
+
+    public static function sanitize_option($raw) {
+        if (is_array($raw)) {
+            $parts = $raw;
+        } else {
+            $text = str_replace(array("\r\n", "\r"), "\n", (string) $raw);
+            $parts = preg_split('/[\s,]+/', $text, -1, PREG_SPLIT_NO_EMPTY);
+            if (!is_array($parts)) {
+                $parts = array();
+            }
+        }
+        // Empty save: persist empty so core() falls back to the PHP file (do not wipe to zero).
+        return self::normalize_list($parts);
+    }
+
+    public static function flush() {
+        self::$core = null;
+        self::$core_map = null;
     }
 
     public static function core_map() {

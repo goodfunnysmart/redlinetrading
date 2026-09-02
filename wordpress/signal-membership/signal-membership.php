@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Signal Membership
  * Description: Per-member watchlists, dashboards, EMA ribbon charts, and nightly emails. Can fetch EODHD and write bars; member pages never call EODHD.
- * Version: 1.5.2
+ * Version: 1.5.3
  * Author: Redline Trading
  * Requires at least: 6.4
  * Requires PHP: 7.4
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 define('SIG_PLUGIN_FILE', __FILE__);
 define('SIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('SIG_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('SIG_PLUGIN_VER', '1.5.2');
+define('SIG_PLUGIN_VER', '1.5.3');
 define('SIG_LWC_VERSION', '5.0.8');
 
 require_once SIG_PLUGIN_DIR . 'includes/class-db.php';
@@ -26,6 +26,7 @@ require_once SIG_PLUGIN_DIR . 'includes/class-cache.php';
 require_once SIG_PLUGIN_DIR . 'includes/class-universe.php';
 require_once SIG_PLUGIN_DIR . 'includes/class-store.php';
 require_once SIG_PLUGIN_DIR . 'includes/class-eodhd.php';
+require_once SIG_PLUGIN_DIR . 'includes/class-symbol-catalog.php';
 require_once SIG_PLUGIN_DIR . 'includes/class-reads.php';
 require_once SIG_PLUGIN_DIR . 'includes/class-writer.php';
 require_once SIG_PLUGIN_DIR . 'includes/class-watchlist.php';
@@ -46,6 +47,7 @@ add_action('plugins_loaded', function () {
     SIG_DB::init();
     SIG_Store::init();
     SIG_Writer::init();
+    SIG_Symbol_Catalog::init();
     SIG_Watchlist::init();
     SIG_REST::init();
     SIG_Email::init();

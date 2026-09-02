@@ -7,6 +7,8 @@ class SIG_Admin {
     public static function init() {
         add_action('admin_menu', array(__CLASS__, 'menu'));
         add_action('admin_init', array(__CLASS__, 'register'));
+        add_action('update_option_sig_core_symbols', array('SIG_Universe', 'flush'));
+        add_action('add_option_sig_core_symbols', array('SIG_Universe', 'flush'));
     }
 
     public static function menu() {
@@ -45,6 +47,10 @@ class SIG_Admin {
         register_setting('sig_settings', 'sig_eodhd_api_key_enc', array(
             'sanitize_callback' => array('SIG_EODHD', 'sanitize_posted_key'),
             'default'           => '',
+        ));
+        register_setting('sig_settings', 'sig_core_symbols', array(
+            'sanitize_callback' => array('SIG_Universe', 'sanitize_option'),
+            'default'           => array(),
         ));
     }
 
@@ -85,6 +91,10 @@ class SIG_Admin {
                 echo '<div class="notice notice-error"><p>Writer batch did not run. Turn the writer on and save an API key first.</p></div>';
             } elseif ($w === 'reset') {
                 echo '<div class="notice notice-success"><p>Today\'s writer session was reset. Processed is 0. Re-run a batch to retry.</p></div>';
+            } elseif ($w === 'symbols') {
+                echo '<div class="notice notice-success"><p>EODHD symbol list refreshed. Members search the local table (no live EODHD on Add).</p></div>';
+            } elseif ($w === 'symbols_fail') {
+                echo '<div class="notice notice-error"><p>Symbol list refresh failed. Check the writer log. The API key is never shown.</p></div>';
             }
         }
 
@@ -138,6 +148,18 @@ class SIG_Admin {
         }
         echo '</td></tr>';
         echo '</table>';
+
+        echo '<h2>Core symbols (always fetched)</h2>';
+        echo '<table class="form-table">';
+        echo '<tr><th><label for="sig_core_symbols">Core symbols</label></th><td>';
+        $core_list = class_exists('SIG_Universe') ? SIG_Universe::core() : array();
+        echo '<textarea name="sig_core_symbols" id="sig_core_symbols" class="large-text code" rows="16" cols="50">';
+        echo esc_textarea(implode("\n", $core_list));
+        echo '</textarea>';
+        echo '<p class="description">One ticker per line (commas also fine). Nightly snapshot + BUY/SELL/WATCH email use this list. Member extras are separate (max 30). Empty save falls back to the plugin default &mdash; it does not wipe the universe to zero. XJO.INDX is not in this list; it is still always fetched for the badge. Saving here changes the list without a code deploy.</p>';
+        echo '<p class="description">Current count: <strong>' . esc_html((string) count($core_list)) . '</strong>.</p>';
+        echo '</td></tr></table>';
+
         submit_button();
         echo '</form>';
 
@@ -180,6 +202,22 @@ class SIG_Admin {
         echo '<p>Core universe: <strong>' . esc_html((string) $core_n) . '</strong> (268 .AU + 12 site extras). XJO.INDX is fetched for the badge and is not part of processed. Per member: up to 30 extras not already in that 280, via the existing Add field. Extras are not added to snapshot processed.</p>';
         $last = SIG_Writer::last_fetch();
         echo '<p>Last fetch (Brisbane): <code>' . esc_html($last !== '' ? $last : 'never') . '</code></p>';
+        if (class_exists('SIG_Symbol_Catalog')) {
+            $st = SIG_Symbol_Catalog::status();
+            $ex = array();
+            foreach ($st['exchanges'] as $k => $v) {
+                $ex[] = $k . ' ' . (int) $v;
+            }
+            echo '<p>EODHD symbol list: <strong>' . esc_html((string) $st['count']) . '</strong> tickers';
+            echo ', last fetch (Brisbane): <code>' . esc_html($st['at'] !== '' ? $st['at'] : 'never') . '</code>';
+            if ($ex) {
+                echo ' (' . esc_html(implode(', ', $ex)) . ')';
+            }
+            echo '. Members search this table (AU/US/LSE/TO/T/CC) — dashboard Add does not call EODHD.</p>';
+            if ($st['error']) {
+                echo '<p>Last symbol-list error: ' . esc_html($st['error']) . '</p>';
+            }
+        }
         echo '<p>Matching weekdays stored: <strong>' . esc_html((string) SIG_Writer::matching_weekdays()) . '</strong> / ' . esc_html((string) SIG_Writer::ready_n()) . ' needed before local reads prefer the plugin DB.</p>';
         $snap = SIG_Writer::snapshot();
         $counts = SIG_Writer::snapshot_counts($snap);
@@ -212,10 +250,15 @@ class SIG_Admin {
         echo '<input type="hidden" name="action" value="sig_writer_compare" />';
         echo '<button class="button">Compare to live /redline/</button>';
         echo '</form>';
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;">';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;margin-right:8px;">';
         wp_nonce_field('sig_writer_reset');
         echo '<input type="hidden" name="action" value="sig_writer_reset" />';
         echo '<button class="button">Reset today\'s writer session</button>';
+        echo '</form>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;">';
+        wp_nonce_field('sig_symbols_refresh');
+        echo '<input type="hidden" name="action" value="sig_symbols_refresh" />';
+        echo '<button class="button">Refresh EODHD symbol list</button>';
         echo '</form>';
 
         $logs = array_reverse(SIG_Writer::logs());
