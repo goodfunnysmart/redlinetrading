@@ -42,8 +42,26 @@ class SIG_Watchlist {
         if ($symbol === '') {
             return new WP_Error('sig_symbol', 'Invalid symbol.');
         }
-        if (!SIG_DB::symbol_exists($symbol)) {
-            return new WP_Error('sig_unknown', 'Symbol is not in the engine universe yet.');
+        $user_id = (int) $user_id;
+        $is_core = class_exists('SIG_Universe') && SIG_Universe::is_core($symbol);
+        if (!$is_core) {
+            $existing = self::get($user_id);
+            $extras = class_exists('SIG_Universe') ? SIG_Universe::extras_in($existing) : array();
+            if (!in_array($symbol, $existing, true) && count($extras) >= SIG_Universe::EXTRA_CAP) {
+                return new WP_Error('sig_extra_cap', 'You can add up to 30 extra tickers beyond the core 280.');
+            }
+            $known = SIG_Store::has_bars($symbol) || SIG_DB::symbol_exists($symbol) || SIG_Cache::symbol_exists($symbol);
+            if (!$known) {
+                if (!SIG_EODHD::has_key()) {
+                    return new WP_Error('sig_unknown', 'Symbol is not in the core 280 and cannot be checked yet.');
+                }
+                if (!SIG_EODHD::symbol_exists($symbol)) {
+                    return new WP_Error('sig_unknown', 'Symbol was not found at EODHD.');
+                }
+            }
+            if (class_exists('SIG_Writer')) {
+                SIG_Writer::enqueue_extra($symbol);
+            }
         }
         $ok = $wpdb->replace(
             self::table(),

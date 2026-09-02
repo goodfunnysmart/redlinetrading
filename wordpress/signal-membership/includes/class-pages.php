@@ -6,6 +6,9 @@ if (!defined('ABSPATH')) {
 class SIG_Pages {
     public static function activate() {
         SIG_Watchlist::activate();
+        if (class_exists('SIG_Store')) {
+            SIG_Store::install();
+        }
         $dash = self::ensure_page('dashboard', 'Dashboard', '[sig_dashboard]');
         self::ensure_page('chart', 'Chart', '[sig_chart]');
         self::ensure_page('profile', 'Profile', '[sig_profile]');

@@ -199,7 +199,7 @@ class SIG_Access {
         if ($symbol === '' || strlen($symbol) > 32) {
             return '';
         }
-        if (!preg_match('/^[A-Z0-9][A-Z0-9.-]{0,20}(\.(AU|US|CC|INDX|LSE|TO))?$/', $symbol)) {
+        if (!preg_match('/^[A-Z0-9][A-Z0-9._-]{0,24}(\.[A-Z]{1,6})?$/', $symbol)) {
             return '';
         }
         return $symbol;

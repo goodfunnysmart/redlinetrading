@@ -43,6 +43,12 @@ class SIG_DB {
     }
 
     public static function latest_trade_date() {
+        if (class_exists('SIG_Reads') && SIG_Reads::prefer_local() && class_exists('SIG_Store')) {
+            $d = SIG_Store::latest_trade_date();
+            if ($d) {
+                return $d;
+            }
+        }
         $db = self::engine();
         if (is_wp_error($db)) {
             return SIG_Cache::latest_trade_date();
@@ -52,6 +58,13 @@ class SIG_DB {
     }
 
     public static function signals_for($symbols, $trade_date) {
+        if (class_exists('SIG_Reads') && SIG_Reads::prefer_local() && class_exists('SIG_Store')) {
+            $rows = SIG_Store::signals_for($symbols, $trade_date);
+            if ($rows) {
+                return $rows;
+            }
+            return SIG_Cache::signals_for($symbols, $trade_date);
+        }
         $db = self::engine();
         if (is_wp_error($db) || !$trade_date) {
             return SIG_Cache::signals_for($symbols, $trade_date);
@@ -75,6 +88,12 @@ class SIG_DB {
     }
 
     public static function bars($symbol) {
+        if (class_exists('SIG_Reads') && SIG_Reads::use_store_for_symbol($symbol)) {
+            $local = SIG_Store::bars($symbol);
+            if ($local) {
+                return $local;
+            }
+        }
         $db = self::engine();
         if (is_wp_error($db)) {
             $rows = SIG_Cache::bars($symbol);
@@ -90,6 +109,12 @@ class SIG_DB {
     }
 
     public static function symbol_exists($symbol) {
+        if (class_exists('SIG_Universe') && SIG_Universe::is_core($symbol)) {
+            return true;
+        }
+        if (class_exists('SIG_Store') && SIG_Store::has_bars($symbol)) {
+            return true;
+        }
         $db = self::engine();
         if (is_wp_error($db)) {
             return SIG_Cache::symbol_exists($symbol);
