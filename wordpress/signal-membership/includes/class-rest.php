@@ -123,6 +123,12 @@ class SIG_REST {
                 'note'   => '',
             ));
             $q = isset($quotes[$sym]) ? $quotes[$sym] : array();
+            $signal = isset($row['signal']) ? $row['signal'] : 'none';
+            if (class_exists('SIG_Reads') && SIG_Reads::use_store_for_symbol($sym)) {
+                list($q, $signal) = SIG_Cache::fill_from_store($sym, $q, $signal);
+                $row['signal'] = $signal;
+                $row['note'] = SIG_Signals::note($signal);
+            }
             $close = null;
             if (isset($q['close']) && $q['close'] !== null) {
                 $close = $q['close'];
