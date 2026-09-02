@@ -83,6 +83,8 @@ class SIG_Admin {
                 echo '<div class="notice notice-success"><p>Compared local snapshot counts to live /redline/.</p></div>';
             } elseif ($w === 'fail') {
                 echo '<div class="notice notice-error"><p>Writer batch did not run. Turn the writer on and save an API key first.</p></div>';
+            } elseif ($w === 'reset') {
+                echo '<div class="notice notice-success"><p>Today\'s writer session was reset. Processed is 0. Re-run a batch to retry.</p></div>';
             }
         }
 
@@ -205,10 +207,15 @@ class SIG_Admin {
         echo '<input type="hidden" name="action" value="sig_writer_batch" />';
         echo '<button class="button">Run one writer batch now</button>';
         echo '</form>';
-        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;">';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;margin-right:8px;">';
         wp_nonce_field('sig_writer_compare');
         echo '<input type="hidden" name="action" value="sig_writer_compare" />';
         echo '<button class="button">Compare to live /redline/</button>';
+        echo '</form>';
+        echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;">';
+        wp_nonce_field('sig_writer_reset');
+        echo '<input type="hidden" name="action" value="sig_writer_reset" />';
+        echo '<button class="button">Reset today\'s writer session</button>';
         echo '</form>';
 
         $logs = array_reverse(SIG_Writer::logs());

@@ -25,6 +25,7 @@ class SIG_Writer {
         add_action('sig_writer_extra_one', array(__CLASS__, 'fetch_one_extra'), 10, 1);
         add_action('admin_post_sig_writer_batch', array(__CLASS__, 'handle_manual_batch'));
         add_action('admin_post_sig_writer_compare', array(__CLASS__, 'handle_compare'));
+        add_action('admin_post_sig_writer_reset', array(__CLASS__, 'handle_reset'));
     }
 
     public static function enabled() {
@@ -281,27 +282,28 @@ class SIG_Writer {
             if (empty($snap['processed']) || !is_array($snap['processed'])) {
                 $snap['processed'] = array();
             }
-            if (!in_array($sym, $snap['processed'], true)) {
-                $snap['processed'][] = $sym;
-            }
-            if (is_array($row) && !empty($row['signal']) && $row['signal'] !== 'none') {
-                $bucket = ($row['signal'] === 'sell') ? 'exit' : $row['signal'];
-                if ($bucket === 'buy' || $bucket === 'exit' || $bucket === 'watch') {
-                    $snap[$bucket][] = array(
-                        'ticker' => $sym,
-                        'price'  => $row['price_fmt'],
-                        'shares' => number_format((int) $row['shares']),
-                        'value'  => number_format((int) $row['value']),
-                    );
+            if ($row !== false) {
+                if (!in_array($sym, $snap['processed'], true)) {
+                    $snap['processed'][] = $sym;
                 }
+                if (is_array($row) && !empty($row['signal']) && $row['signal'] !== 'none') {
+                    $bucket = ($row['signal'] === 'sell') ? 'exit' : $row['signal'];
+                    if ($bucket === 'buy' || $bucket === 'exit' || $bucket === 'watch') {
+                        $snap[$bucket][] = array(
+                            'ticker' => $sym,
+                            'price'  => $row['price_fmt'],
+                            'shares' => number_format((int) $row['shares']),
+                            'value'  => number_format((int) $row['value']),
+                        );
+                    }
+                }
+            } else {
+                $errors++;
             }
             $snap['date'] = $now->format('d M Y H:i');
             $snap['timestamp'] = $now->getTimestamp();
             self::save_snapshot($snap);
             $did++;
-            if ($row === false) {
-                $errors++;
-            }
         }
 
         self::mark_fetched();
@@ -588,6 +590,22 @@ class SIG_Writer {
         self::compare_to_remote();
         $url = admin_url('options-general.php?page=signal-membership');
         wp_safe_redirect(add_query_arg('sig_writer', 'compare', $url));
+        exit;
+    }
+
+    public static function handle_reset() {
+        if (!current_user_can('manage_options')) {
+            wp_die('Nope');
+        }
+        check_admin_referer('sig_writer_reset');
+        self::save_snapshot(self::empty_snapshot());
+        $finalized_ts = (int) get_option('sig_writer_finalized_ts', 0);
+        if ($finalized_ts >= self::cutoff_time()) {
+            delete_option('sig_writer_finalized_ts');
+        }
+        self::log("Today's writer session reset (processed cleared).");
+        $url = admin_url('options-general.php?page=signal-membership');
+        wp_safe_redirect(add_query_arg('sig_writer', 'reset', $url));
         exit;
     }
 }

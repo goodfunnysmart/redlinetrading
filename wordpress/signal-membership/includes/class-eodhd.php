@@ -10,11 +10,15 @@ if (!defined('ABSPATH')) {
  */
 class SIG_EODHD {
     const OPTION = 'sig_eodhd_api_key_enc';
+    const CIPHER_PREFIX = 'sig1:';
 
     public static function sanitize_posted_key($posted) {
         $posted = trim((string) $posted);
         if ($posted === '' || preg_match('/^\*+$/', $posted) || $posted === '********') {
             return (string) get_option(self::OPTION, '');
+        }
+        if (strpos($posted, self::CIPHER_PREFIX) === 0) {
+            return $posted;
         }
         return self::encrypt($posted);
     }
@@ -66,13 +70,16 @@ class SIG_EODHD {
         if ($raw === false) {
             return '';
         }
-        return base64_encode($iv . $raw);
+        return self::CIPHER_PREFIX . base64_encode($iv . $raw);
     }
 
     public static function decrypt($blob) {
         $blob = (string) $blob;
         if ($blob === '') {
             return '';
+        }
+        if (strpos($blob, self::CIPHER_PREFIX) === 0) {
+            $blob = substr($blob, strlen(self::CIPHER_PREFIX));
         }
         $bin = base64_decode($blob, true);
         if ($bin === false || strlen($bin) < 17) {
