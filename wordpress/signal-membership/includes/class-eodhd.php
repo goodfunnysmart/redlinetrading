@@ -172,7 +172,9 @@ class SIG_EODHD {
         if ($token === '') {
             return new WP_Error('sig_eodhd_key', 'EODHD API key is not set.');
         }
-        $url = 'https://eodhd.com/api/exchange-symbol-list/' . rawurlencode($exchange)
+        // List path vs EOD suffix: Tokyo EOD is CODE.T but exchange-symbol-list/T 404s; XTKS is the list code.
+        $list_code = ($exchange === 'T') ? 'XTKS' : $exchange;
+        $url = 'https://eodhd.com/api/exchange-symbol-list/' . rawurlencode($list_code)
             . '?api_token=' . rawurlencode($token)
             . '&fmt=json';
         $res = wp_remote_get($url, array(

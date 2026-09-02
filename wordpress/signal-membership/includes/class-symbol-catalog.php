@@ -54,7 +54,7 @@ class SIG_Symbol_Catalog {
     }
 
     public static function exchanges() {
-        // T = Tokyo (EODHD’s JP board). LSE not Yahoo .L.
+        // T = Tokyo EOD suffix (7203.T). List endpoint is XTKS (T 404s). LSE not Yahoo .L.
         return array('AU', 'US', 'LSE', 'TO', 'T', 'CC');
     }
 
