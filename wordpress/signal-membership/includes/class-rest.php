@@ -212,7 +212,7 @@ class SIG_REST {
         if (is_readable($csv)) {
             $mtime = (int) filemtime($csv);
         }
-        $cache_key = 'sig_bars_v2_' . md5($symbol . '|' . $day . '|' . $mtime);
+        $cache_key = 'sig_bars_v3_' . md5($symbol . '|' . $day . '|' . $mtime);
         $cached = get_transient($cache_key);
         if (is_array($cached)) {
             return rest_ensure_response($cached);
@@ -237,7 +237,7 @@ class SIG_REST {
         $ribbon = SIG_Ema::ribbon($closes);
         $candles = array();
         $emas = array(
-            15 => array(), 25 => array(), 36 => array(),
+            15 => array(), 25 => array(), 35 => array(),
             45 => array(), 55 => array(), 65 => array(),
         );
         foreach ($rows as $i => $r) {
@@ -256,10 +256,35 @@ class SIG_REST {
             }
         }
 
+        $ret_1d = null;
+        $ret_6m = null;
+        $n = count($closes);
+        if ($n >= 2 && $closes[$n - 2] != 0.0) {
+            $ret_1d = (($closes[$n - 1] / $closes[$n - 2]) - 1.0) * 100.0;
+        }
+        if ($n >= 1) {
+            $last_date = isset($rows[$n - 1]['trade_date']) ? $rows[$n - 1]['trade_date'] : '';
+            $anchor = $last_date ? date_create($last_date) : false;
+            if ($anchor) {
+                $anchor->modify('-180 days');
+                $want = $anchor->format('Y-m-d');
+                $prev = null;
+                foreach ($rows as $rr) {
+                    if (isset($rr['trade_date']) && $rr['trade_date'] <= $want && isset($rr['close']) && $rr['close']) {
+                        $prev = (float) $rr['close'];
+                    }
+                }
+                if ($prev) {
+                    $ret_6m = (($closes[$n - 1] / $prev) - 1.0) * 100.0;
+                }
+            }
+        }
         $payload = array(
             'symbol'  => $symbol,
             'candles' => $candles,
             'ema'     => $emas,
+            'ret_1d'  => $ret_1d,
+            'ret_6m'  => $ret_6m,
         );
         set_transient($cache_key, $payload, DAY_IN_SECONDS);
         return rest_ensure_response($payload);

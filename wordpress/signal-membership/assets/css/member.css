@@ -669,6 +669,17 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   padding: 0 8px 8px;
   color: var(--sig-muted);
   font-size: 12px;
+  align-items: center;
+}
+
+.sig-legend-rets {
+  display: inline-flex;
+  gap: 12px;
+  margin-left: 4px;
+  font-family: var(--sig-mono);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--sig-text);
 }
 
 .sig-swatch {
@@ -1150,16 +1161,30 @@ button.sig-stat {
 }
 
 .sig-chart-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0 0 2px;
+  padding: 2px 4px 2px 2px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+}
+
+.sig-chart-row-main {
   appearance: none;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  width: 100%;
-  margin: 0 0 2px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
   padding: 6px 8px;
-  border: 1px solid transparent;
-  border-radius: 10px;
+  border: 0;
+  border-radius: 8px;
   background: transparent;
   color: inherit;
   cursor: pointer;
@@ -1167,13 +1192,21 @@ button.sig-stat {
   font: inherit;
 }
 
-.sig-chart-row:hover {
+.sig-chart-row:hover,
+.sig-chart-row:hover .sig-chart-row-main {
   background: var(--sig-card-hover);
 }
 
 .sig-chart-row.is-current {
   background: var(--sig-card-hover);
   border-color: var(--sig-accent);
+}
+
+.sig-chart-row .sig-add-row {
+  flex: 0 0 auto;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 11px;
 }
 
 .sig-chart-row .sig-sym {

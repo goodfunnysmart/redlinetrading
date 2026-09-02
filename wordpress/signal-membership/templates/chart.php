@@ -52,9 +52,10 @@ $symbol = isset($_GET['symbol']) ? SIG_Access::sanitize_symbol(wp_unslash($_GET[
 
       <div class="sig-legend">
         <span><i class="sig-swatch" style="background:#22c55e"></i>EMA 15</span>
-        <span><i class="sig-swatch" style="background:#64748b"></i>EMA 25 / 36 / 45 / 55</span>
+        <span><i class="sig-swatch" style="background:#64748b"></i>EMA 25 / 35 / 45 / 55</span>
         <span><i class="sig-swatch" style="background:#ef4444"></i>EMA 65</span>
         <span><i class="sig-swatch" style="background:#c084fc"></i>RSI 14</span>
+        <span class="sig-legend-rets" data-chart-rets><span data-ret="1d">1D —</span><span data-ret="6m">6M —</span></span>
       </div>
 
       <p id="sig-chart-status" class="sig-msg"></p>
@@ -62,7 +63,7 @@ $symbol = isset($_GET['symbol']) ? SIG_Access::sanitize_symbol(wp_unslash($_GET[
         <div id="sig-chart"></div>
       </div>
 
-      <p class="sig-legal">This chart is for information only and is not personal financial advice. Candles, the EMA ribbon (15 / 25 / 36 / 45 / 55 / 65) and RSI 14 are information only and do not constitute a recommendation to buy, sell or hold any security.</p>
+      <p class="sig-legal">This chart is for information only and is not personal financial advice. Candles, the EMA ribbon (15 / 25 / 35 / 45 / 55 / 65) and RSI 14 are information only and do not constitute a recommendation to buy, sell or hold any security.</p>
     </div>
   </div>
 </div>

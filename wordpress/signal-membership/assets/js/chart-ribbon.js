@@ -25,6 +25,7 @@
     emaSeries: [],
     list: 'dreamteam',
     rows: [],
+    dreamteam: {},
     paidLists: !(cfg.isPaid === false || cfg.isPaid === 0 || cfg.isPaid === '0' || cfg.isPaid === ''),
     loadGen: 0
   };
@@ -48,8 +49,10 @@
     status.classList.toggle('sig-error', !!isError);
   }
 
-  function api(path, query) {
+  function api(path, opts) {
+    opts = opts || {};
     var url = rest + path;
+    var query = opts.query;
     if (query && typeof query === 'object') {
       var qs = Object.keys(query).map(function (k) {
         return encodeURIComponent(k) + '=' + encodeURIComponent(query[k]);
@@ -58,24 +61,87 @@
         url += (url.indexOf('?') >= 0 ? '&' : '?') + qs;
       }
     }
+    var headers = {
+      Accept: 'application/json',
+      'X-WP-Nonce': nonce
+    };
+    if (opts.body && typeof opts.body === 'string') {
+      headers['Content-Type'] = 'application/json';
+    }
     return fetch(url, {
+      method: opts.method || 'GET',
       credentials: 'same-origin',
-      headers: {
-        Accept: 'application/json',
-        'X-WP-Nonce': nonce
-      }
+      headers: headers,
+      body: opts.body || null
     }).then(function (res) {
       return res.json().catch(function () {
         return {};
       }).then(function (body) {
         if (!res.ok) {
-          var err = new Error((body && body.message) || ('HTTP ' + res.status));
+          var err = new Error((body && (body.message || body.error)) || ('HTTP ' + res.status));
           err.status = res.status;
           throw err;
         }
         return body;
       });
     });
+  }
+
+  function fmtRet(v) {
+    if (v === null || v === undefined || v === '') {
+      return '—';
+    }
+    var n = Number(v);
+    if (isNaN(n)) {
+      return '—';
+    }
+    var s = n.toFixed(1) + '%';
+    if (n > 0) {
+      s = '+' + s;
+    }
+    return s;
+  }
+
+  function retClass(v) {
+    if (v === null || v === undefined || v === '') {
+      return '';
+    }
+    var n = Number(v);
+    if (isNaN(n) || n === 0) {
+      return '';
+    }
+    return n > 0 ? ' sig-up' : ' sig-down';
+  }
+
+  function setDreamteam(list) {
+    var map = {};
+    (list || []).forEach(function (s) {
+      map[String(s || '').toUpperCase()] = 1;
+    });
+    state.dreamteam = map;
+  }
+
+  function inDreamteam(sym) {
+    return !!state.dreamteam[String(sym || '').toUpperCase()];
+  }
+
+  function updateRets(payload) {
+    var box = page ? page.querySelector('[data-chart-rets]') : null;
+    if (!box) {
+      return;
+    }
+    var d1 = box.querySelector('[data-ret="1d"]');
+    var d6 = box.querySelector('[data-ret="6m"]');
+    var r1 = payload && payload.ret_1d;
+    var r6 = payload && payload.ret_6m;
+    if (d1) {
+      d1.textContent = '1D ' + fmtRet(r1);
+      d1.className = retClass(r1).trim();
+    }
+    if (d6) {
+      d6.textContent = '6M ' + fmtRet(r6);
+      d6.className = retClass(r6).trim();
+    }
   }
 
   function loadUniverse() {
@@ -291,7 +357,7 @@
     var colors = {
       15: { color: '#22c55e', width: 2 },
       25: { color: '#64748b', width: 1 },
-      36: { color: '#64748b', width: 1 },
+      35: { color: '#64748b', width: 1 },
       45: { color: '#64748b', width: 1 },
       55: { color: '#64748b', width: 1 },
       65: { color: '#ef4444', width: 2 }
@@ -519,6 +585,7 @@
         return;
       }
       state.payload = payload;
+      updateRets(payload);
       renderChart();
       prefetchNeighbors();
     }).catch(function (e) {
@@ -546,6 +613,7 @@
       return Promise.resolve(listCache.dreamteam);
     }
     return api('watchlist').then(function (data) {
+      setDreamteam(data.watchlist || []);
       var rows = watchlistRows(data);
       listCache.dreamteam = rows;
       return rows;
@@ -574,8 +642,11 @@
     if (!state.paidLists) {
       return fetchWatchlistFallback();
     }
-    return api('me/signals', { view: view }).then(function (data) {
+    return api('me/signals', { query: { view: view } }).then(function (data) {
       state.paidLists = true;
+      if (data.watchlist) {
+        setDreamteam(data.watchlist);
+      }
       var rows = data.signals || [];
       listCache[view] = rows;
       return rows;
@@ -637,10 +708,16 @@
     }
     listEl.innerHTML = rows.map(function (row) {
       var sym = String(row.symbol || '').toUpperCase();
-      return '<button type="button" class="sig-chart-row" role="option" data-sym="' + escapeHtml(sym) + '" aria-selected="false">' +
+      var add = '';
+      if (state.list !== 'dreamteam' && !inDreamteam(sym)) {
+        add = '<button type="button" class="sig-add-row" data-add="' + escapeHtml(sym) + '">Add</button>';
+      }
+      return '<div class="sig-chart-row" role="option" data-sym="' + escapeHtml(sym) + '" aria-selected="false">' +
+        '<button type="button" class="sig-chart-row-main" data-open-sym="' + escapeHtml(sym) + '">' +
         '<span class="sig-sym">' + escapeHtml(sym) + '</span>' +
         '<span class="sig-chart-row-pills">' + rowPills(row) + '</span>' +
-        '</button>';
+        '</button>' + add +
+        '</div>';
     }).join('');
     highlightCurrent();
   }
@@ -740,6 +817,33 @@
       var listBtn = ev.target.closest('[data-list]');
       if (listBtn) {
         setList(listBtn.getAttribute('data-list'));
+        return;
+      }
+      var addBtn = ev.target.closest('[data-add]');
+      if (addBtn) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        var addSym = addBtn.getAttribute('data-add');
+        if (!addSym) {
+          return;
+        }
+        addBtn.disabled = true;
+        api('watchlist', {
+          method: 'POST',
+          body: JSON.stringify({ symbol: addSym })
+        }).then(function (data) {
+          setDreamteam(data.watchlist || []);
+          delete listCache.dreamteam;
+          renderList();
+        }).catch(function (e) {
+          addBtn.disabled = false;
+          setStatus(e.message || 'Could not add to Dreamteam.', true);
+        });
+        return;
+      }
+      var openBtn = ev.target.closest('[data-open-sym]');
+      if (openBtn) {
+        assignSymbol(openBtn.getAttribute('data-open-sym'));
         return;
       }
       var row = ev.target.closest('[data-sym]');
