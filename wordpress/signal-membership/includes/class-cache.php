@@ -97,9 +97,28 @@ class SIG_Cache {
         return ($raw === false) ? '' : $raw;
     }
 
+    /**
+     * Live /redline/ snapshot only (local file then HTTP). Never the plugin writer snapshot.
+     */
+    public static function http_snapshot() {
+        $raw = self::read_local(self::redline_dir() . '/signals_snapshot.json');
+        if ($raw === '') {
+            $raw = self::http_get(self::snapshot_url());
+        }
+        $data = json_decode($raw, true);
+        return is_array($data) ? $data : array();
+    }
+
     public static function snapshot() {
         if (is_array(self::$snapshot)) {
             return self::$snapshot;
+        }
+        if (class_exists('SIG_Reads') && SIG_Reads::prefer_local() && class_exists('SIG_Writer')) {
+            $local = SIG_Writer::snapshot();
+            if (is_array($local) && $local) {
+                self::$snapshot = $local;
+                return self::$snapshot;
+            }
         }
         $raw = self::read_local(self::redline_dir() . '/signals_snapshot.json');
         if ($raw === '') {
@@ -184,7 +203,11 @@ class SIG_Cache {
                 }
             }
         }
-        return array_values(array_unique($out));
+        $out = array_values(array_unique($out));
+        if (!$out && class_exists('SIG_Reads') && SIG_Reads::prefer_local() && class_exists('SIG_Universe')) {
+            return SIG_Universe::core();
+        }
+        return $out;
     }
 
     protected static function signal_index($snap) {
@@ -425,6 +448,12 @@ class SIG_Cache {
         $symbol = SIG_Access::sanitize_symbol($symbol);
         if ($symbol === '') {
             return array();
+        }
+        if (class_exists('SIG_Reads') && SIG_Reads::use_store_for_symbol($symbol)) {
+            $local = SIG_Store::bars($symbol);
+            if ($local) {
+                return $local;
+            }
         }
         $file = self::symbol_to_filename($symbol);
         $raw = self::read_local(rtrim(self::cache_dir(), '/') . '/' . $file);

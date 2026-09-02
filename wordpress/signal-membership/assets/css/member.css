@@ -382,10 +382,55 @@ html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-moon { display: bloc
 .sig-add {
   display: flex;
   gap: 8px;
+  position: relative;
 }
 
+.sig-add-wrap {
+  position: relative;
+  min-width: 0;
+}
+.sig-suggest {
+  position: absolute;
+  z-index: 30;
+  left: 0;
+  right: 0;
+  top: 100%;
+  margin: 0;
+  padding: 4px 0;
+  list-style: none;
+  background: var(--sig-elev);
+  border: 1px solid var(--sig-border);
+  border-radius: 10px;
+  max-height: 240px;
+  overflow: auto;
+}
+.sig-suggest[hidden] { display: none; }
+.sig-suggest button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  color: var(--sig-text);
+  padding: 10px 12px;
+  font: 500 13px var(--sig-sans);
+  cursor: pointer;
+  height: auto;
+  border-radius: 0;
+}
+.sig-suggest button:hover,
+.sig-suggest button.is-on {
+  background: var(--sig-card);
+}
+.sig-suggest-name {
+  color: var(--sig-muted);
+  font-weight: 400;
+  margin-left: 8px;
+}
+
+
 .sig-add input,
-.sig-add button,
+.sig-add > button,
 .sig-btn {
   height: 40px;
   border-radius: 10px;
@@ -401,7 +446,7 @@ html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-moon { display: bloc
 }
 
 .sig-btn,
-.sig-add button {
+.sig-add > button {
   background: var(--sig-btn-bg);
   color: var(--sig-btn-ink);
   font-weight: 700;
@@ -432,8 +477,8 @@ body.sig-app a.sig-btn:hover,
 body.sig-app a.sig-btn:focus-visible,
 .sig-btn:hover,
 .sig-btn:focus-visible,
-.sig-add button:hover,
-.sig-add button:focus-visible {
+.sig-add > button:hover,
+.sig-add > button:focus-visible {
   background: var(--sig-btn-bg-hover);
   color: var(--sig-btn-ink);
   text-decoration: none;
@@ -442,9 +487,23 @@ body.sig-app a.sig-btn:focus-visible,
 
 body.sig-app a.sig-btn:active,
 .sig-btn:active,
-.sig-add button:active {
+.sig-add > button:active {
   transform: translateY(1px);
   filter: brightness(0.96);
+}
+
+.sig-add .sig-suggest button {
+  background: transparent;
+  color: var(--sig-text);
+  border: 0;
+  height: auto;
+  font-weight: 500;
+  border-radius: 0;
+}
+.sig-add .sig-suggest button:hover,
+.sig-add .sig-suggest button.is-on {
+  background: var(--sig-card);
+  color: var(--sig-text);
 }
 
 .sig-btn.ghost,

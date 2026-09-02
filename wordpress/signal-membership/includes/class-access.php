@@ -199,7 +199,16 @@ class SIG_Access {
         if ($symbol === '' || strlen($symbol) > 32) {
             return '';
         }
-        if (!preg_match('/^[A-Z0-9][A-Z0-9.-]{0,20}(\.(AU|US|CC|INDX|LSE|TO))?$/', $symbol)) {
+        if (substr($symbol, -3) === '.AX') {
+            $symbol = substr($symbol, 0, -3) . '.AU';
+        }
+        if (strpos($symbol, '.') === false) {
+            $suffixes = array('AU', 'AX', 'US', 'T', 'L', 'TO', 'CC', 'INDX', 'HK', 'NY', 'PA', 'DE');
+            if (!in_array($symbol, $suffixes, true) && preg_match('/^[A-Z0-9][A-Z0-9-]{0,11}$/', $symbol)) {
+                $symbol .= '.AU';
+            }
+        }
+        if (!preg_match('/^[A-Z0-9][A-Z0-9._-]{0,24}(\.[A-Z]{1,6})?$/', $symbol)) {
             return '';
         }
         return $symbol;

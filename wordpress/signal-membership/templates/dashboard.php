@@ -30,11 +30,14 @@ if (!defined('ABSPATH')) {
       <span class="sig-size-meta">Risk <strong data-risk>$1,000</strong></span>
       <span class="sig-size-meta">Max <strong data-max>$25,000</strong></span>
     </div>
+    <div class="sig-add-wrap">
     <form class="sig-add" data-add-form>
-      <input type="text" name="symbol" list="sig-universe" placeholder="Add to Dreamteam e.g. BHP.AU" autocomplete="off" />
-      <datalist id="sig-universe"></datalist>
+      <input type="text" name="symbol" placeholder="Add to Dreamteam e.g. BHP.AU" autocomplete="off" autocapitalize="off" spellcheck="false" />
       <button type="submit">Add</button>
+      <ul class="sig-suggest" data-suggest hidden></ul>
     </form>
+    <p class="sig-note">Search ticker or name. ASX is .AU (BHP is fine).</p>
+    </div>
     <label class="sig-filter-wrap"><span class="sig-filter-label">Filter</span>
       <input type="search" data-q placeholder="BHP, buy…" autocomplete="off" />
     </label>

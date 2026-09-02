@@ -55,6 +55,11 @@ class SIG_REST {
             'callback'            => array(__CLASS__, 'universe'),
             'permission_callback' => array('SIG_Access', 'rest_chart_permission'),
         ));
+        register_rest_route($ns, '/symbol-search', array(
+            'methods'             => 'GET',
+            'callback'            => array(__CLASS__, 'symbol_search'),
+            'permission_callback' => array('SIG_Access', 'rest_member_permission'),
+        ));
         register_rest_route($ns, '/fanout', array(
             'methods'             => 'POST',
             'callback'            => array('SIG_Email', 'fanout'),
@@ -192,6 +197,25 @@ class SIG_REST {
     public static function universe() {
         return rest_ensure_response(array(
             'symbols' => SIG_Cache::universe(),
+        ));
+    }
+
+    /**
+     * Local LIKE search on prefetched EODHD symbol list. No EODHD call.
+     */
+    public static function symbol_search($request) {
+        $rl = self::rate_limit('symsearch', 60);
+        if (is_wp_error($rl)) {
+            return $rl;
+        }
+        $q = '';
+        if ($request instanceof WP_REST_Request) {
+            $q = (string) $request->get_param('q');
+        }
+        $rows = class_exists('SIG_Symbol_Catalog') ? SIG_Symbol_Catalog::search($q, 20) : array();
+        return rest_ensure_response(array(
+            'q'      => $q,
+            'results' => $rows,
         ));
     }
 

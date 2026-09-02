@@ -2,6 +2,10 @@
 // ==========================================================
 // Redline ASX Radar - Mailer v2.7 (Sub-$1 Precision Engine)
 // ==========================================================
+// STAGE 2 note (no behaviour change): plugin Dreamteam is the only member
+// email. Park this To: mail@greache.com / Steve when the plugin writer is
+// live so we do not double-send. Do not stop the /redline/ price cron until
+// David says so. This file is not edited on the live host from this PR.
 
 set_time_limit(0);
 date_default_timezone_set('Australia/Brisbane');
