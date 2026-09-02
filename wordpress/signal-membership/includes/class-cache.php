@@ -343,10 +343,50 @@ class SIG_Cache {
         return $watchlist ? array_values($watchlist) : array();
     }
 
+    public static function quote_is_empty($q) {
+        if (!is_array($q)) {
+            return true;
+        }
+        return !isset($q['close']) || $q['close'] === null || $q['close'] === '';
+    }
+
+    /**
+     * Fill close/ema/returns and classify from plugin bars (member extras).
+     * Does not add the ticker to the core snapshot.
+     *
+     * @return array{0:array,1:string} quote, signal
+     */
+    public static function fill_from_store($symbol, $quote, $signal) {
+        $symbol = SIG_Access::sanitize_symbol($symbol);
+        if ($symbol === '' || !class_exists('SIG_Reads') || !SIG_Reads::use_store_for_symbol($symbol)) {
+            return array(is_array($quote) ? $quote : array(), $signal);
+        }
+        require_once dirname(__FILE__) . '/class-ema.php';
+        $fresh = self::quote_from_bars($symbol);
+        if (!self::quote_is_empty($fresh)) {
+            $quote = $fresh;
+        } elseif (!is_array($quote)) {
+            $quote = $fresh;
+        }
+        if (class_exists('SIG_Writer') && class_exists('SIG_Store')) {
+            $built = SIG_Writer::signal_row_from_bars($symbol, SIG_Store::bars($symbol));
+            if (is_array($built) && isset($built['signal'])) {
+                $signal = $built['signal'];
+                if ((empty($quote['ema65']) || $quote['ema65'] === null) && isset($built['ema65']) && $built['ema65'] !== null) {
+                    $quote['ema65'] = $built['ema65'];
+                }
+                if (self::quote_is_empty($quote) && isset($built['close']) && $built['close'] !== null) {
+                    $quote['close'] = $built['close'];
+                }
+            }
+        }
+        return array($quote, $signal);
+    }
+
     /**
      * close / ema65 / 6m return for symbols.
-     * Transient sig_quotes_v1_{Brisbane Y-m-d} for 6 hours.
-     * Bars prefer local cache_dir CSVs.
+     * Transient sig_quotes_v3_{Brisbane Y-m-d} for 6 hours.
+     * Empty quotes are not cached if plugin bars exist (extras added mid-day).
      */
     public static function quotes_for($symbols) {
         require_once dirname(__FILE__) . '/class-ema.php';
@@ -374,20 +414,30 @@ class SIG_Cache {
         $missing = array();
         $out = array();
         foreach ($wanted as $sym) {
-            if (isset($map[$sym]) && is_array($map[$sym])) {
-                $out[$sym] = $map[$sym];
+            $cached = (isset($map[$sym]) && is_array($map[$sym])) ? $map[$sym] : null;
+            $empty = ($cached === null) || self::quote_is_empty($cached);
+            $has_store = class_exists('SIG_Store') && SIG_Store::has_bars($sym);
+            if ($cached !== null && !($empty && $has_store)) {
+                $out[$sym] = $cached;
             } else {
                 $missing[] = $sym;
             }
         }
 
+        $dirty = false;
         foreach ($missing as $sym) {
             $quote = self::quote_from_bars($sym);
-            $map[$sym] = $quote;
             $out[$sym] = $quote;
+            if (!self::quote_is_empty($quote)) {
+                $map[$sym] = $quote;
+                $dirty = true;
+            } elseif (isset($map[$sym])) {
+                unset($map[$sym]);
+                $dirty = true;
+            }
         }
 
-        if ($missing) {
+        if ($dirty) {
             set_transient($cache_key, $map, 6 * HOUR_IN_SECONDS);
         }
         return $out;

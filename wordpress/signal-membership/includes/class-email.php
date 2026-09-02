@@ -175,6 +175,9 @@ class SIG_Email {
         foreach ($symbols as $sym) {
             $q = isset($quotes[$sym]) ? $quotes[$sym] : array();
             $sig = isset($idx[$sym]) ? $idx[$sym]['signal'] : 'none';
+            if (class_exists('SIG_Cache') && class_exists('SIG_Reads') && SIG_Reads::use_store_for_symbol($sym)) {
+                list($q, $sig) = SIG_Cache::fill_from_store($sym, $q, $sig);
+            }
             $price = null;
             if (isset($q['close']) && $q['close'] !== '' && $q['close'] !== null) {
                 $price = (float) $q['close'];
