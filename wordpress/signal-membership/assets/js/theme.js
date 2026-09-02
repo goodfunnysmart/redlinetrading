@@ -21,11 +21,9 @@
     if (btn) {
       var isLight = theme === 'light';
       btn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
-      btn.title = isLight ? 'Switch to dark' : 'Switch to light';
-      var lab = btn.querySelector('.sig-theme-label');
-      if (lab) {
-        lab.textContent = isLight ? 'Dark' : 'Light';
-      }
+      var next = isLight ? 'Switch to dark' : 'Switch to light';
+      btn.setAttribute('aria-label', next);
+      btn.title = next;
     }
     document.dispatchEvent(new CustomEvent('sig-theme', { detail: theme }));
   }

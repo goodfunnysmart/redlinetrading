@@ -199,20 +199,51 @@ body.sig-app .sig-topbar a.sig-btn.ghost:hover {
 
 .sig-theme-toggle {
   appearance: none;
-  height: 32px;
-  padding: 0 12px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0;
   border-radius: 999px;
   border: 1px solid var(--sig-border);
   background: transparent;
   color: var(--sig-text);
-  font: 600 12px var(--sig-sans);
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .sig-theme-toggle:hover,
 .sig-theme-toggle:focus-visible {
   border-color: var(--sig-accent);
   color: var(--sig-text);
+}
+
+.sig-theme-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
+  position: relative;
+}
+.sig-theme-icon svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+.sig-theme-icon .sig-icon-moon { display: none; }
+.sig-theme-icon .sig-icon-sun { display: block; }
+html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-sun { display: none; }
+html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-moon { display: block; }
+
+.sig-login-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 8px;
+  white-space: nowrap;
+  color: var(--sig-accent);
+  text-decoration: none;
+  font-weight: 600;
 }
 
 .sig-main {
@@ -262,8 +293,13 @@ body.sig-app .sig-topbar a.sig-btn.ghost:hover {
   background: var(--sig-card);
   border: 1px solid var(--sig-border-soft);
   border-radius: var(--sig-radius);
-  padding: 16px 18px;
+  padding: 16px 12px;
   box-shadow: var(--sig-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .sig-stat .n {
@@ -274,11 +310,13 @@ body.sig-app .sig-topbar a.sig-btn.ghost:hover {
 }
 
 .sig-stat .l {
-  color: var(--sig-muted);
-  font-size: 12px;
+  color: #c9d7ea;
+  font-size: 13px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   margin-top: 4px;
+  text-align: center;
 }
 
 .sig-stat.is-buy .n { color: var(--sig-buy); }
@@ -521,6 +559,8 @@ body.sig-app a.sig-btn.ghost:focus-visible,
 
 .sig-table tr:last-child td { border-bottom: none; }
 .sig-table tbody tr:hover { background: var(--sig-card-hover); }
+.sig-card-chev { display: none; }
+
 
 .sig-sym {
   font-family: var(--sig-mono);
@@ -581,10 +621,18 @@ body.sig-app a.sig-btn.ghost:focus-visible,
 
 .sig-legal {
   margin-top: 22px;
-  color: var(--sig-faint);
-  font-size: 12px;
+  color: #9fb0c0;
+  font-size: 14px;
   line-height: 1.55;
   max-width: 720px;
+}
+
+.sig-gate-free {
+  margin: 14px 0 0;
+  font-size: 14px;
+}
+.sig-gate-free a {
+  color: var(--sig-accent);
 }
 
 .sig-chart-wrap {
@@ -600,13 +648,38 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   height: 680px;
 }
 
+#sig-chart-status.sig-msg {
+  padding: 0;
+  margin: 0 0 8px;
+  text-align: left;
+  min-height: 0;
+}
+#sig-chart-status:empty {
+  display: none;
+  margin: 0;
+}
+#sig-chart-status.sig-error:not(:empty) {
+  padding: 8px 0;
+}
+
 .sig-legend {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  padding: 12px 8px 4px;
+  padding: 0 8px 8px;
   color: var(--sig-muted);
   font-size: 12px;
+  align-items: center;
+}
+
+.sig-legend-rets {
+  display: inline-flex;
+  gap: 12px;
+  margin-left: 4px;
+  font-family: var(--sig-mono);
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--sig-text);
 }
 
 .sig-swatch {
@@ -621,8 +694,36 @@ body.sig-app a.sig-btn.ghost:focus-visible,
 .sig-error { color: var(--sig-sell); padding: 16px; }
 
 @media (max-width: 860px) {
-  .sig-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .sig-topbar { padding: 12px 16px; }
+  .sig-stats {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .sig-stat {
+    padding: 8px 3px 7px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: none;
+  }
+  button.sig-stat { text-align: center; }
+  .sig-stat .n {
+    font-size: 16px;
+    line-height: 1.1;
+  }
+  .sig-stat .l {
+    font-size: 11px;
+    letter-spacing: 0.02em;
+    margin-top: 2px;
+    line-height: 1.15;
+    color: #d5e2f2;
+    white-space: nowrap;
+  }
+  .sig-stat.is-on {
+    outline-width: 1px;
+    box-shadow: none;
+  }
+  .sig-stat.is-all { grid-column: auto; }
 }
 
 @media (max-width: 720px) {
@@ -633,16 +734,129 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   .sig-topbar {
     flex-wrap: wrap;
     gap: 10px;
+    overflow-x: hidden;
   }
+}
+
+@media (max-width: 480px) {
+  html.sig-html,
+  body.sig-app {
+    overflow-x: hidden;
+  }
+  .sig-topbar.sig-topbar-guest {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto auto auto;
+    align-items: center;
+    gap: 8px 6px;
+    padding: 10px 12px;
+    overflow-x: hidden;
+  }
+  .sig-topbar-guest .sig-brand-word {
+    display: none;
+  }
+  .sig-brand {
+    grid-column: 1;
+    min-width: 0;
+  }
+  .sig-nav {
+    grid-column: 2;
+    flex: unset;
+    min-width: 0;
+    gap: 0;
+  }
+  .sig-nav a {
+    padding: 8px 8px;
+  }
+  .sig-topbar-guest .sig-user {
+    display: contents;
+  }
+  .sig-theme-toggle {
+    grid-column: 3;
+  }
+  .sig-login-link,
+  .sig-user > a:not(.sig-btn) {
+    grid-column: auto;
+    min-height: 44px;
+    white-space: nowrap;
+  }
+  .sig-topbar .sig-btn {
+    grid-column: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .sig-market-badge {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-self: start;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 720px) {
   .sig-toolbar,
-  .sig-sizing,
-  .sig-add {
+  .sig-sizing {
     width: 100%;
+  }
+  .sig-sizing {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .sig-cap-label input {
+    width: 72px;
+    height: 36px;
+    padding: 0 6px;
+    font-size: 13px;
+  }
+  .sig-size-meta {
+    white-space: nowrap;
+    font-size: 12px;
+  }
+  .sig-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 8px;
+    align-items: stretch;
+  }
+  .sig-sizing,
+  .sig-packs {
+    grid-column: 1 / -1;
+  }
+  .sig-toolbar .sig-add {
+    width: auto;
+    min-width: 0;
   }
   .sig-add input {
     flex: 1;
     min-width: 0;
+    width: auto;
+  }
+  .sig-filter-wrap {
+    min-width: 0;
+    gap: 0;
+  }
+  .sig-filter-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+  .sig-filter-wrap input {
+    min-width: 0;
     width: 100%;
+  }
+  .sig-chart-toolbar {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+    align-items: center;
+  }
+  .sig-chart-toolbar .sig-add {
+    width: auto;
+    min-width: 0;
+  }
+  .sig-chart-mode {
+    grid-column: 1 / -1;
   }
   .sig-card {
     background: transparent;
@@ -751,12 +965,62 @@ body.sig-app a.sig-btn.ghost:focus-visible,
     height: 36px;
     min-height: 36px;
   }
+  .sig-table tr {
+    position: relative;
+    padding: 12px 36px 12px 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sig-table td.sig-cell-1d,
+  .sig-table td.sig-cell-ret,
+  .sig-table td.sig-cell-px,
+  .sig-table td.sig-cell-sh,
+  .sig-table td.sig-cell-val,
+  .sig-table td.sig-cell-chart,
+  .sig-table td.sig-cell-team {
+    display: none;
+  }
+  .sig-card-chev {
+    display: block;
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    margin-top: -6px;
+    border-right: 2px solid var(--sig-faint);
+    border-bottom: 2px solid var(--sig-faint);
+    transform: rotate(45deg);
+    pointer-events: none;
+  }
+  .sig-table tr.is-open {
+    padding: 14px 36px 14px 14px;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .sig-table tr.is-open .sig-card-chev {
+    top: 22px;
+    margin-top: 0;
+    transform: rotate(225deg);
+  }
+  .sig-table tr.is-open td.sig-cell-1d,
+  .sig-table tr.is-open td.sig-cell-ret,
+  .sig-table tr.is-open td.sig-cell-px,
+  .sig-table tr.is-open td.sig-cell-sh,
+  .sig-table tr.is-open td.sig-cell-val,
+  .sig-table tr.is-open td.sig-cell-chart,
+  .sig-table tr.is-open td.sig-cell-team {
+    display: flex;
+  }
+  .sig-table tr.is-open .sig-cell-chart,
+  .sig-table tr.is-open .sig-cell-team {
+    grid-column: span 1;
+  }
   .sig-note { max-width: none; }
-  #sig-chart { height: 520px; }
+  #sig-chart { height: min(42dvh, 380px); min-height: 300px; }
   .sig-hero h1 { font-size: 22px; }
 }
 
-.sig-packs { display:flex; gap:8px; flex-wrap:wrap; width:100%; }
+.sig-packs { display: none; }
 .sig-pack {
   border: 1px dashed var(--sig-border);
   background: transparent;
@@ -775,14 +1039,17 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   flex-wrap: wrap;
   margin-top: 16px;
 }
-.sig-gate .sig-legal { margin-top: 18px; }
+.sig-gate .sig-legal { margin-top: 18px; color: #9fb0c0; font-size: 14px; }
 .sig-topbar .sig-btn {
-  height: 32px;
-  padding: 0 12px;
-  font-size: 12px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0 14px;
+  font-size: 13px;
   display: inline-flex;
   align-items: center;
   text-decoration: none;
+  white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 
@@ -790,7 +1057,7 @@ button.sig-stat {
   appearance: none;
   font: inherit;
   color: inherit;
-  text-align: left;
+  text-align: center;
   width: 100%;
   cursor: pointer;
 }
@@ -830,13 +1097,236 @@ button.sig-stat {
   gap: 12px;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 
 .sig-chart-mode {
   display: flex;
   gap: 8px;
 }
+
+.sig-main:has(#sig-chart-page) {
+  max-width: 1440px;
+}
+
+.sig-chart-layout {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+.sig-chart-sidebar {
+  background: var(--sig-card);
+  border: 1px solid var(--sig-border-soft);
+  border-radius: var(--sig-radius);
+  box-shadow: var(--sig-shadow);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 780px;
+  overflow: hidden;
+}
+
+.sig-chart-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px 6px;
+  color: var(--sig-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.sig-chart-list-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 0 10px 8px;
+}
+
+.sig-chart-list-tabs .sig-chip {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.sig-chart-list {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  padding: 4px 8px 10px;
+}
+
+.sig-chart-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  margin: 0 0 2px;
+  padding: 2px 4px 2px 2px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+}
+
+.sig-chart-row-main {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+}
+
+.sig-chart-row:hover,
+.sig-chart-row:hover .sig-chart-row-main {
+  background: var(--sig-card-hover);
+}
+
+.sig-chart-row.is-current {
+  background: var(--sig-card-hover);
+  border-color: var(--sig-accent);
+}
+
+.sig-chart-row .sig-add-row,
+.sig-chart-add-slot {
+  flex: 0 0 44px;
+  width: 44px;
+  height: 28px;
+  padding: 0;
+  font-size: 11px;
+  box-sizing: border-box;
+}
+.sig-chart-add-slot {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.sig-chart-row .sig-sym {
+  font-size: 80%;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sig-chart-row-pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.sig-chart-row .sig-pill {
+  padding: 2px 7px;
+  font-size: 10px;
+  gap: 4px;
+}
+
+.sig-chart-row .sig-pill::before {
+  width: 5px;
+  height: 5px;
+}
+
+.sig-chart-empty {
+  margin: 0;
+  padding: 16px 10px 20px;
+  color: var(--sig-muted);
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.sig-chart-empty a {
+  color: var(--sig-accent);
+  text-decoration: none;
+}
+
+.sig-chart-empty a:hover {
+  text-decoration: underline;
+}
+
+.sig-list-btn,
+.sig-chart-drawer-close,
+.sig-chart-drawer-backdrop {
+  display: none;
+}
+
+.sig-chart-col {
+  min-width: 0;
+}
+
+.sig-chart-col .sig-legal {
+  margin-top: 16px;
+}
+
+@media (max-width: 720px) {
+  .sig-chart-layout {
+    display: block;
+  }
+  .sig-list-btn {
+    display: inline-flex;
+    align-items: center;
+  }
+  .sig-chart-drawer-close {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 8px;
+    border: 1px solid var(--sig-border);
+    background: transparent;
+    color: var(--sig-text);
+    font: 600 12px var(--sig-sans);
+    cursor: pointer;
+  }
+  .sig-chart-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(280px, 86vw);
+    max-height: none;
+    height: 100%;
+    z-index: 40;
+    border-radius: 0;
+    transform: translateX(-110%);
+    transition: transform 0.2s ease;
+  }
+  #sig-chart-page.is-drawer-open .sig-chart-sidebar {
+    transform: translateX(0);
+  }
+  .sig-chart-drawer-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 35;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: rgba(2, 6, 23, 0.55);
+    cursor: pointer;
+  }
+  #sig-chart-page.is-drawer-open .sig-chart-drawer-backdrop {
+    display: block;
+  }
+}
+
 
 .sig-sizing {
   display: flex;
@@ -862,9 +1352,9 @@ button.sig-stat {
   border: 1px solid var(--sig-border);
   background: var(--sig-elev);
   color: var(--sig-text);
-  padding: 0 12px;
+  padding: 0 8px;
   font: 500 14px var(--sig-mono);
-  width: 140px;
+  width: 88px;
 }
 
 .sig-size-meta {
@@ -949,14 +1439,7 @@ button.sig-stat {
   color: var(--sig-accent) !important;
 }
 
-@media (max-width: 1100px) {
-  .sig-stats { grid-template-columns: repeat(5, minmax(0, 1fr)); }
-}
 
-@media (max-width: 860px) {
-  .sig-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .sig-stat.is-all { grid-column: 1 / -1; }
-}
 
 /* PMPro account / profile / billing inside the dark shell */
 body.sig-app .pmpro,
@@ -1097,6 +1580,204 @@ body.sig-app #pmpro_tos_fields {
   color: var(--sig-text) !important;
 }
 
+body.sig-app .pmpro,
+body.sig-app #pmpro_form,
+body.sig-app .pmpro_login_wrap,
+body.sig-app .pmpro_checkout,
+body.sig-app .entry-content,
+body.sig-app .wp-block-post-content {
+  max-width: 580px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+}
+
+body.sig-app .pmpro_card,
+body.sig-app .pmpro_box,
+body.sig-app .pmpro_section {
+  max-width: 100% !important;
+  width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  box-sizing: border-box;
+}
+
+body.sig-app .pmpro_form_field-password {
+  position: relative;
+  overflow: visible;
+}
+body.sig-app .pmpro_form_field-password label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: nowrap;
+}
+body.sig-app .pmpro_form_field-password input[type="password"],
+body.sig-app .pmpro_form_field-password input[type="text"] {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  padding-right: 12px !important;
+}
+body.sig-app .pmpro_form_field-password-toggle,
+body.sig-app .pmpro_form_field-password-toggle .pmpro_btn,
+body.sig-app .pmpro_form_field-password-toggle .pmpro_btn-plain,
+body.sig-app .pmpro_form_field-password button.pmpro_btn-plain,
+body.sig-app button.pmpro_btn.pmpro_btn-plain.hide-if-no-js {
+  position: static !important;
+  float: none !important;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  width: auto !important;
+  max-width: none !important;
+  height: auto !important;
+  min-height: 32px !important;
+  padding: 6px 12px !important;
+  margin: 0 !important;
+  background: transparent !important;
+  color: var(--sig-accent) !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  line-height: 1.2 !important;
+  white-space: nowrap !important;
+  overflow: visible !important;
+  flex: 0 0 auto;
+}
+body.sig-app .pmpro_form_field-password-toggle-state {
+  white-space: nowrap;
+  overflow: visible;
+}
+
+body.sig-app .pmpro_form_field-checkbox,
+body.sig-app .login-remember,
+body.sig-app .login-remember label,
+body.sig-app .pmpro_form_field-checkbox label,
+body.sig-app label[for="rememberme"] {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 44px;
+  color: var(--sig-text) !important;
+  font-size: 14px;
+  cursor: pointer;
+}
+body.sig-app .login-remember input[type="checkbox"],
+body.sig-app input[type="checkbox"]#rememberme,
+body.sig-app .pmpro_form_field-checkbox input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  min-height: 20px;
+  margin: 0;
+  border: 1px solid var(--sig-border);
+  border-radius: 4px;
+  background: var(--sig-elev) !important;
+  cursor: pointer;
+  accent-color: var(--sig-accent);
+}
+body.sig-app .login-remember input[type="checkbox"]:checked,
+body.sig-app input[type="checkbox"]#rememberme:checked,
+body.sig-app .pmpro_form_field-checkbox input[type="checkbox"]:checked {
+  background: var(--sig-accent) !important;
+  border-color: var(--sig-accent);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%2304121a' stroke-width='2' d='M3 8l3 3 7-7'/%3E%3C/svg%3E");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+body.sig-app .pmpro_checkout_login,
+body.sig-app .pmpro_already_have_account,
+body.sig-app .pmpro_form_login,
+body.sig-app .pmpro_actions_nav,
+body.sig-app p.pmpro_checkout-msg,
+body.sig-app .pmpro_message:not(.pmpro_error):not(.pmpro_success) {
+  background: var(--sig-card) !important;
+  color: var(--sig-muted) !important;
+  border-color: var(--sig-border) !important;
+  box-shadow: none !important;
+}
+
+body.sig-app .pmpro_form_field-honeypot,
+body.sig-app .pmpro_form_field-text-full-name,
+body.sig-app .pmpro_form_field-text-fullname,
+body.sig-app .pmpro_form_field:has(input[name="fullname"]),
+body.sig-app .pmpro_form_field:has(input[name="full_name"]),
+body.sig-app input#fullname,
+body.sig-app label[for="fullname"] {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0);
+}
+
+body.sig-app #pmpro_form .pmpro_btn-submit,
+body.sig-app #pmpro_form input[type="submit"],
+body.sig-app .pmpro_form_submit .pmpro_btn,
+body.sig-app #pmpro_submit_span,
+body.sig-app #pmpro_submit_span .pmpro_btn {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 44px !important;
+  height: 44px !important;
+  margin: 12px 0 0 !important;
+  box-sizing: border-box !important;
+}
+
+body.sig-app .pmpro_payment-check,
+body.sig-app .gateway_check,
+body.sig-app .pmpro_form_field.pmpro_check_instructions,
+body.sig-app .pmpro_form_fieldset:has(.pmpro_check_instructions),
+body.sig-app .pmpro_card:has(.pmpro_check_instructions),
+body.sig-app #pmpro_payment_information_fields:has(.pmpro_check_instructions) {
+  display: none !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+}
+body.sig-app .pmpro_card_actions {
+  background: var(--sig-card) !important;
+  color: var(--sig-muted) !important;
+  border-top: 1px solid var(--sig-border) !important;
+  box-shadow: none !important;
+}
+body.sig-app .pmpro_hidden,
+body.sig-app .pmpro_hidden label,
+body.sig-app .pmpro_hidden input,
+body.sig-app .pmpro_hidden strong {
+  position: absolute !important;
+  left: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0);
+}
+
+body.sig-checkout-free .pmpro_level-cost,
+body.sig-checkout-free .pmpro_checkout-price,
+body.sig-checkout-free .pmpro_price,
+body.sig-checkout-free .pmpro_checkout-field-sig_capital,
+body.sig-checkout-free .pmpro_form_field-sig_capital {
+  display: none !important;
+}
+
+html.sig-html[data-theme="light"] .sig-gate .sig-legal,
+html.sig-html[data-theme="light"] .sig-legal {
+  color: #4b5d73;
+}
+
 /* Light theme — same layout, inverted tokens */
 html.sig-html[data-theme="light"] {
   --sig-bg: #f3f6fb;
@@ -1150,4 +1831,8 @@ html.sig-html[data-theme="light"] body.sig-app.sig-market-bearish {
 
 html.sig-html[data-theme="light"] .sig-chip.is-on {
   color: #f8fafc;
+}
+
+html.sig-html[data-theme="light"] .sig-chart-drawer-backdrop {
+  background: rgba(15, 23, 42, 0.35);
 }

@@ -14,6 +14,7 @@
     asOf: null,
     watchlist: [],
     signals: [],
+    expanded: {},
     counts: { dreamteam: 0, buy: 0, sell: 0, watch: 0, all: 0 },
     filter: 'dreamteam',
     universe: [],
@@ -353,10 +354,11 @@
       var teamBtn = inDreamteam(sym)
         ? '<button type="button" class="sig-remove" data-remove="' + escapeHtml(sym) + '">Remove</button>'
         : '<button type="button" class="sig-add-row" data-add="' + escapeHtml(sym) + '">Add</button>';
+      var open = !!state.expanded[sym];
       return (
-        '<tr>' +
+        '<tr data-sym="' + escapeHtml(sym) + '" class="' + (open ? 'is-open' : '') + '" aria-expanded="' + (open ? 'true' : 'false') + '">' +
           '<td class="sig-cell-sym" data-label="Symbol"><a class="sig-sym" href="' + chartLink(sym) + '">' + escapeHtml(sym) + '</a></td>' +
-          '<td class="sig-cell-sig" data-label="Signal">' + pill(r.signal, !!r.under_redline) + '</td>' +
+          '<td class="sig-cell-sig" data-label="Signal">' + pill(r.signal, !!r.under_redline) + '<span class="sig-card-chev" aria-hidden="true"></span></td>' +
           '<td class="sig-cell-1d sig-num' + retClass(r.ret_1d) + '" data-label="1D %">' + escapeHtml(fmtRet(r.ret_1d)) + '</td>' +
           '<td class="sig-cell-ret sig-num' + retClass(r.ret_6m) + '" data-label="6M %">' + escapeHtml(fmtRet(r.ret_6m)) + '</td>' +
           '<td class="sig-cell-px sig-num" data-label="Price">' + escapeHtml(fmtPrice(r.close)) + '</td>' +
@@ -480,6 +482,18 @@
     if (sortBtn) {
       ev.preventDefault();
       toggleSort(sortBtn.getAttribute('data-sort'));
+      return;
+    }
+    var row = ev.target.closest('[data-rows] tr[data-sym]');
+    if (row && !ev.target.closest('a, button, input')) {
+      if (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) {
+        var rowSym = row.getAttribute('data-sym');
+        if (rowSym) {
+          state.expanded[rowSym] = !state.expanded[rowSym];
+          row.classList.toggle('is-open', !!state.expanded[rowSym]);
+          row.setAttribute('aria-expanded', state.expanded[rowSym] ? 'true' : 'false');
+        }
+      }
       return;
     }
     var addBtn = ev.target.closest('[data-add]');

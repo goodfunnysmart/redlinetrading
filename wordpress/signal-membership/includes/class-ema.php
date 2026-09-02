@@ -5,7 +5,7 @@ if (!defined('ABSPATH')) {
 
 /** Same SMA-seed EMA as engine/lib/Ema.php so REST charts cannot drift. */
 class SIG_Ema {
-    public static $periods = array(15, 25, 36, 45, 55, 65);
+    public static $periods = array(15, 25, 35, 45, 55, 65);
 
     public static function series($closes, $period) {
         $period = (int) $period;

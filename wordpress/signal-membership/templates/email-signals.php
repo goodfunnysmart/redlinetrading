@@ -68,8 +68,6 @@ $row_html = function ($r) use ($fmt_price, $fmt_pct, $pct_color, $pct_span, $bad
     return '<tr>'
         . '<td style="' . $td . 'font-family:Arial,sans-serif;">'
         . '<a href="' . esc_url($href) . '" style="color:#7dd3fc;font-weight:700;text-decoration:none;">' . $sym . '</a>'
-        . $pct_span($ret_1d)
-        . $pct_span($ret_6m)
         . '</td>'
         . '<td style="' . $td . '">' . $badge(isset($r['signal']) ? $r['signal'] : '', $under) . '</td>'
         . '<td style="' . $td . 'color:' . $pct_color($ret_1d) . ';font-variant-numeric:tabular-nums;">' . esc_html($fmt_pct($ret_1d)) . '</td>'

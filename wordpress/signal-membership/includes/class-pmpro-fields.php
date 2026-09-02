@@ -7,6 +7,12 @@ class SIG_Pmpro_Fields {
     public static function init() {
         add_action('init', array(__CLASS__, 'register_fields'), 20);
         add_action('user_register', array(__CLASS__, 'seed_defaults'));
+        add_filter('the_title', array(__CLASS__, 'free_checkout_title'), 20, 2);
+        add_filter('document_title_parts', array(__CLASS__, 'free_document_title'));
+        add_filter('pmpro_level_cost_text', array(__CLASS__, 'free_cost_text'), 20, 2);
+        add_filter('body_class', array(__CLASS__, 'body_class'));
+        add_filter('pmpro_include_payment_information_fields', array(__CLASS__, 'skip_empty_check_box'));
+        add_action('template_redirect', array(__CLASS__, 'start_checkout_buffer'));
         register_meta('user', 'sig_capital', array(
             'type'              => 'number',
             'single'            => true,
@@ -21,6 +27,103 @@ class SIG_Pmpro_Fields {
             'show_in_rest'      => false,
             'auth_callback'     => array(__CLASS__, 'meta_auth'),
         ));
+    }
+
+    public static function checkout_level_id() {
+        if (isset($_REQUEST['level'])) {
+            return (int) $_REQUEST['level'];
+        }
+        if (isset($_REQUEST['pmpro_level'])) {
+            return (int) $_REQUEST['pmpro_level'];
+        }
+        global $pmpro_level;
+        if (!empty($pmpro_level) && !empty($pmpro_level->id)) {
+            return (int) $pmpro_level->id;
+        }
+        return 0;
+    }
+
+    public static function is_free_checkout() {
+        $free = SIG_Access::free_level_id();
+        return $free > 0 && self::checkout_level_id() === $free;
+    }
+
+    public static function skip_empty_check_box($include) {
+        $gw = '';
+        if (function_exists('pmpro_getGateway')) {
+            $gw = (string) pmpro_getGateway();
+        }
+        if ($gw === '' && function_exists('pmpro_getOption')) {
+            $gw = (string) pmpro_getOption('gateway');
+        }
+        if ($gw === 'check') {
+            return false;
+        }
+        return $include;
+    }
+
+    public static function start_checkout_buffer() {
+        if (is_admin()) {
+            return;
+        }
+        if (!self::is_paid_checkout() && !self::is_free_checkout()) {
+            return;
+        }
+        ob_start(array(__CLASS__, 'strip_check_fieldset'));
+    }
+
+    public static function strip_check_fieldset($html) {
+        if (!is_string($html) || strpos($html, 'Pay by Check') === false) {
+            return $html;
+        }
+        $stripped = preg_replace(
+            '#<fieldset[^>]*id=["\']pmpro_payment_information_fields["\'][^>]*>.*?Pay by Check.*?</fieldset>#si',
+            '',
+            $html
+        );
+        return is_string($stripped) ? $stripped : $html;
+    }
+
+    public static function is_paid_checkout() {
+        $paid = SIG_Access::paid_level_id();
+        return $paid > 0 && self::checkout_level_id() === $paid;
+    }
+
+    public static function body_class($classes) {
+        if (self::is_free_checkout()) {
+            $classes[] = 'sig-checkout-free';
+        }
+        if (self::is_paid_checkout()) {
+            $classes[] = 'sig-checkout-paid';
+        }
+        return $classes;
+    }
+
+    public static function free_checkout_title($title, $post_id = 0) {
+        if (is_admin() || !self::is_free_checkout()) {
+            return $title;
+        }
+        if (is_string($title) && stripos($title, 'Membership Checkout') !== false) {
+            return 'Create a free chart login';
+        }
+        return $title;
+    }
+
+    public static function free_document_title($parts) {
+        if (!self::is_free_checkout() || !is_array($parts)) {
+            return $parts;
+        }
+        if (!empty($parts['title']) && stripos($parts['title'], 'Membership Checkout') !== false) {
+            $parts['title'] = 'Create a free chart login';
+        }
+        return $parts;
+    }
+
+    public static function free_cost_text($cost, $level = null) {
+        if (!self::is_free_checkout()) {
+            return $cost;
+        }
+        return '';
     }
 
     public static function meta_auth($allowed, $meta_key, $object_id, $user_id, $cap, $caps) {
@@ -67,20 +170,25 @@ class SIG_Pmpro_Fields {
             pmpro_add_field_group(
                 'radar',
                 'Additional Information',
-                'Trading capital drives dashboard position sizing (1% risk to EMA65, max 25% of capital).'
+                ''
             );
+        }
+        $paid = SIG_Access::paid_level_id();
+        $capital_args = array(
+            'label'          => 'Default Trading Capital',
+            'size'           => 20,
+            'profile'        => true,
+            'required'       => false,
+            'memberslistcsv' => true,
+            'hint'           => 'Trading capital drives dashboard position sizing (1% risk to EMA65, max 25% of capital). Default 100000.',
+        );
+        if ($paid) {
+            $capital_args['levels'] = array($paid);
         }
         $capital = new PMPro_Field(
             'sig_capital',
             'text',
-            array(
-                'label'           => 'Default Trading Capital',
-                'size'            => 20,
-                'profile'         => true,
-                'required'        => false,
-                'memberslistcsv'  => true,
-                'hint'            => 'Default 100000. Used for share sizing on the dashboard.',
-            )
+            $capital_args
         );
         $phone = new PMPro_Field(
             'sig_phone',

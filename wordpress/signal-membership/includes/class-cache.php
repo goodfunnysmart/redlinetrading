@@ -578,12 +578,12 @@ class SIG_Cache {
             }
         }
         $status = 'unknown';
-        $label = 'ASX vs EMA65 unavailable';
+        $label = 'ASX vs REDLINE unavailable';
         $above = null;
         if ($close !== null && $ema65 !== null) {
             $above = ($close > $ema65);
             $status = $above ? 'bullish' : 'bearish';
-            $label = $above ? 'ASX above EMA65' : 'ASX below EMA65';
+            $label = $above ? 'ASX above REDLINE' : 'ASX below REDLINE';
         }
         $once = array(
             'symbol' => $symbol,

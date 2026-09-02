@@ -24,7 +24,7 @@ if (!defined('ABSPATH')) {
 
   <div class="sig-toolbar">
     <div class="sig-sizing">
-      <label class="sig-cap-label">Capital AUD
+      <label class="sig-cap-label">Capital
         <input type="number" min="1000" max="100000000" step="1000" data-capital value="100000" />
       </label>
       <span class="sig-size-meta">Risk <strong data-risk>$1,000</strong></span>
@@ -35,14 +35,9 @@ if (!defined('ABSPATH')) {
       <datalist id="sig-universe"></datalist>
       <button type="submit">Add</button>
     </form>
-    <label class="sig-filter-wrap">Filter
+    <label class="sig-filter-wrap"><span class="sig-filter-label">Filter</span>
       <input type="search" data-q placeholder="BHP, buy…" autocomplete="off" />
     </label>
-    <div class="sig-packs">
-      <button type="button" class="sig-pack" data-pack="BHP.AU,CBA.AU,NAB.AU,WBC.AU,ANZ.AU,RIO.AU,CSL.AU,WES.AU">ASX core</button>
-      <button type="button" class="sig-pack" data-pack="VAS.AU,VHY.AU,GHHF.AU">ETFs</button>
-      <button type="button" class="sig-pack" data-pack="AAPL.US,TSLA.US,GOOG.US,MSFT.US,BTC-USD.CC">US + BTC</button>
-    </div>
   </div>
 
   <p class="sig-error" data-error hidden></p>

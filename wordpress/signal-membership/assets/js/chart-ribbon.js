@@ -6,9 +6,13 @@
   var status = document.getElementById('sig-chart-status');
   var title = document.getElementById('sig-chart-symbol');
   var page = document.getElementById('sig-chart-page');
+  var listEl = document.getElementById('sig-chart-list');
   var rest = cfg.rest || '';
   var nonce = cfg.nonce || '';
   var chartUrl = cfg.chartUrl || '/?pagename=chart';
+  var dashUrl = cfg.dashUrl || '/?pagename=dashboard';
+  var LIST_KEY = 'sig-chart-list';
+  var LIST_VIEWS = { dreamteam: 1, buy: 1, sell: 1, watch: 1 };
 
   var params = new URLSearchParams(window.location.search);
   var symbol = (params.get('symbol') || cfg.symbol || '').toUpperCase().trim();
@@ -18,8 +22,16 @@
     payload: null,
     chart: null,
     priceSeries: null,
-    emaSeries: []
+    emaSeries: [],
+    list: 'dreamteam',
+    rows: [],
+    dreamteam: {},
+    paidLists: !(cfg.isPaid === false || cfg.isPaid === 0 || cfg.isPaid === '0' || cfg.isPaid === ''),
+    loadGen: 0
   };
+  var barCache = {};
+  var barPending = {};
+  var listCache = {};
 
   function escapeHtml(s) {
     return String(s == null ? '' : s)
@@ -37,23 +49,99 @@
     status.classList.toggle('sig-error', !!isError);
   }
 
-  function api(path) {
-    return fetch(rest + path, {
-      credentials: 'same-origin',
-      headers: {
-        Accept: 'application/json',
-        'X-WP-Nonce': nonce
+  function api(path, opts) {
+    opts = opts || {};
+    var url = rest + path;
+    var query = opts.query;
+    if (query && typeof query === 'object') {
+      var qs = Object.keys(query).map(function (k) {
+        return encodeURIComponent(k) + '=' + encodeURIComponent(query[k]);
+      }).join('&');
+      if (qs) {
+        url += (url.indexOf('?') >= 0 ? '&' : '?') + qs;
       }
+    }
+    var headers = {
+      Accept: 'application/json',
+      'X-WP-Nonce': nonce
+    };
+    if (opts.body && typeof opts.body === 'string') {
+      headers['Content-Type'] = 'application/json';
+    }
+    return fetch(url, {
+      method: opts.method || 'GET',
+      credentials: 'same-origin',
+      headers: headers,
+      body: opts.body || null
     }).then(function (res) {
       return res.json().catch(function () {
         return {};
       }).then(function (body) {
         if (!res.ok) {
-          throw new Error((body && body.message) || ('HTTP ' + res.status));
+          var err = new Error((body && (body.message || body.error)) || ('HTTP ' + res.status));
+          err.status = res.status;
+          throw err;
         }
         return body;
       });
     });
+  }
+
+  function fmtRet(v) {
+    if (v === null || v === undefined || v === '') {
+      return '—';
+    }
+    var n = Number(v);
+    if (isNaN(n)) {
+      return '—';
+    }
+    var s = n.toFixed(1) + '%';
+    if (n > 0) {
+      s = '+' + s;
+    }
+    return s;
+  }
+
+  function retClass(v) {
+    if (v === null || v === undefined || v === '') {
+      return '';
+    }
+    var n = Number(v);
+    if (isNaN(n) || n === 0) {
+      return '';
+    }
+    return n > 0 ? ' sig-up' : ' sig-down';
+  }
+
+  function setDreamteam(list) {
+    var map = {};
+    (list || []).forEach(function (s) {
+      map[String(s || '').toUpperCase()] = 1;
+    });
+    state.dreamteam = map;
+  }
+
+  function inDreamteam(sym) {
+    return !!state.dreamteam[String(sym || '').toUpperCase()];
+  }
+
+  function updateRets(payload) {
+    var box = page ? page.querySelector('[data-chart-rets]') : null;
+    if (!box) {
+      return;
+    }
+    var d1 = box.querySelector('[data-ret="1d"]');
+    var d6 = box.querySelector('[data-ret="6m"]');
+    var r1 = payload && payload.ret_1d;
+    var r6 = payload && payload.ret_6m;
+    if (d1) {
+      d1.textContent = '1D ' + fmtRet(r1);
+      d1.className = retClass(r1).trim();
+    }
+    if (d6) {
+      d6.textContent = '6M ' + fmtRet(r6);
+      d6.className = retClass(r6).trim();
+    }
   }
 
   function loadUniverse() {
@@ -70,13 +158,136 @@
     });
   }
 
+  function savedList() {
+    var v = 'dreamteam';
+    try {
+      v = localStorage.getItem(LIST_KEY) || 'dreamteam';
+    } catch (err) {
+      v = 'dreamteam';
+    }
+    if (!LIST_VIEWS[v]) {
+      v = 'dreamteam';
+    }
+    if (!state.paidLists && v !== 'dreamteam') {
+      v = 'dreamteam';
+    }
+    return v;
+  }
+
+  function persistList(view) {
+    try {
+      localStorage.setItem(LIST_KEY, view);
+    } catch (err) {
+      /* ignore */
+    }
+  }
+
+  function updateUrl(sym) {
+    var url = new URL(window.location.href);
+    if (sym) {
+      url.searchParams.set('symbol', sym);
+    } else {
+      url.searchParams.delete('symbol');
+    }
+    history.replaceState({ symbol: sym }, '', url.pathname + url.search + url.hash);
+  }
+
+  function closeDrawer() {
+    if (!page) {
+      return;
+    }
+    page.classList.remove('is-drawer-open');
+    var backdrop = page.querySelector('.sig-chart-drawer-backdrop');
+    if (backdrop) {
+      backdrop.hidden = true;
+    }
+  }
+
+  function openDrawer() {
+    if (!page) {
+      return;
+    }
+    page.classList.add('is-drawer-open');
+    var backdrop = page.querySelector('.sig-chart-drawer-backdrop');
+    if (backdrop) {
+      backdrop.hidden = false;
+    }
+  }
+
+  function fetchBars(sym) {
+    sym = String(sym || '').toUpperCase().trim();
+    if (!sym) {
+      return Promise.reject(new Error('Missing symbol'));
+    }
+    if (barCache[sym]) {
+      return Promise.resolve(barCache[sym]);
+    }
+    if (barPending[sym]) {
+      return barPending[sym];
+    }
+    barPending[sym] = api('bars/' + encodeURIComponent(sym)).then(function (payload) {
+      barCache[sym] = payload;
+      delete barPending[sym];
+      return payload;
+    }).catch(function (err) {
+      delete barPending[sym];
+      throw err;
+    });
+    return barPending[sym];
+  }
+
+  function prefetchNeighbors() {
+    var rows = state.rows || [];
+    if (!rows.length || !state.symbol) {
+      return;
+    }
+    var cur = String(state.symbol).toUpperCase();
+    var i = -1;
+    var n;
+    for (n = 0; n < rows.length; n++) {
+      if (String(rows[n].symbol || '').toUpperCase() === cur) {
+        i = n;
+        break;
+      }
+    }
+    if (i < 0) {
+      return;
+    }
+    var around = [
+      rows[(i + 1) % rows.length],
+      rows[(i - 1 + rows.length) % rows.length]
+    ];
+    around.forEach(function (row) {
+      var s = row && row.symbol ? String(row.symbol).toUpperCase() : '';
+      if (s && s !== cur && !barCache[s] && !barPending[s]) {
+        fetchBars(s).catch(function () {
+          /* prefetch is best-effort */
+        });
+      }
+    });
+  }
+
   function assignSymbol(sym) {
     sym = String(sym || '').toUpperCase().trim();
     if (!sym) {
       return;
     }
-    var join = chartUrl.indexOf('?') >= 0 ? '&' : '?';
-    window.location.assign(chartUrl + join + 'symbol=' + encodeURIComponent(sym));
+    closeDrawer();
+    if (sym === state.symbol && state.payload && state.payload.symbol === sym) {
+      highlightCurrent();
+      return;
+    }
+    state.symbol = sym;
+    if (title) {
+      title.textContent = sym;
+    }
+    var pickInput = page ? page.querySelector('[data-chart-pick] input[name="symbol"]') : null;
+    if (pickInput) {
+      pickInput.value = sym;
+    }
+    updateUrl(sym);
+    highlightCurrent();
+    loadBars();
   }
 
   function zoomSixMonths(chart, candles) {
@@ -146,7 +357,7 @@
     var colors = {
       15: { color: '#22c55e', width: 2 },
       25: { color: '#64748b', width: 1 },
-      36: { color: '#64748b', width: 1 },
+      35: { color: '#64748b', width: 1 },
       45: { color: '#64748b', width: 1 },
       55: { color: '#64748b', width: 1 },
       65: { color: '#ef4444', width: 2 }
@@ -219,10 +430,21 @@
       lastValueVisible: true,
       priceFormat: { type: 'price', precision: 1, minMove: 0.1 },
       autoscaleInfoProvider: function () {
-        return { priceRange: { minValue: 0, maxValue: 100 } };
+        return {
+          priceRange: { minValue: 0, maxValue: 100 },
+          margins: { above: 0, below: 0 }
+        };
       }
     }, 1);
     series.setData(data);
+    try {
+      series.priceScale().applyOptions({
+        autoScale: true,
+        scaleMargins: { top: 0, bottom: 0 }
+      });
+    } catch (err) {
+      /* price scale options are optional */
+    }
     series.createPriceLine({
       price: 70,
       color: 'rgba(239, 68, 68, 0.55)',
@@ -291,10 +513,16 @@
       var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
       return v || fallback;
     }
-    var height = Math.max(el.clientHeight || 0, 680);
+    function chartBoxHeight() {
+      var h = el.clientHeight || 0;
+      if (h >= 160) {
+        return h;
+      }
+      return (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) ? 360 : 680;
+    }
     var chart = LightweightCharts.createChart(el, {
       width: el.clientWidth,
-      height: height,
+      height: chartBoxHeight(),
       layout: {
         background: { color: cssVar('--sig-bg', '#0b1220') },
         textColor: cssVar('--sig-muted', '#94a3b8'),
@@ -349,13 +577,221 @@
       setStatus('Chart library failed to load.', true);
       return;
     }
-    setStatus('Loading ' + state.symbol + '…');
-    api('bars/' + encodeURIComponent(state.symbol)).then(function (payload) {
+    var gen = ++state.loadGen;
+    var sym = state.symbol;
+    setStatus('Loading ' + sym + '…');
+    fetchBars(sym).then(function (payload) {
+      if (gen !== state.loadGen) {
+        return;
+      }
       state.payload = payload;
+      updateRets(payload);
       renderChart();
+      prefetchNeighbors();
     }).catch(function (e) {
+      if (gen !== state.loadGen) {
+        return;
+      }
       setStatus(e.message || 'Could not load chart.', true);
     });
+  }
+
+  function watchlistRows(data) {
+    return (data.watchlist || []).map(function (s) {
+      return {
+        symbol: String(s || '').toUpperCase(),
+        signal: 'none',
+        under_redline: false
+      };
+    }).filter(function (r) {
+      return !!r.symbol;
+    });
+  }
+
+  function fetchWatchlistFallback() {
+    if (listCache.dreamteam) {
+      return Promise.resolve(listCache.dreamteam);
+    }
+    return api('watchlist').then(function (data) {
+      setDreamteam(data.watchlist || []);
+      var rows = watchlistRows(data);
+      listCache.dreamteam = rows;
+      return rows;
+    }).catch(function () {
+      listCache.dreamteam = [];
+      return [];
+    });
+  }
+
+  function disablePaidLists() {
+    state.paidLists = false;
+    if (state.list !== 'dreamteam') {
+      state.list = 'dreamteam';
+      persistList('dreamteam');
+    }
+    syncListTabs();
+  }
+
+  function fetchList(view) {
+    if (!LIST_VIEWS[view]) {
+      view = 'dreamteam';
+    }
+    if (listCache[view]) {
+      return Promise.resolve(listCache[view]);
+    }
+    if (!state.paidLists) {
+      return fetchWatchlistFallback();
+    }
+    return api('me/signals', { query: { view: view } }).then(function (data) {
+      state.paidLists = true;
+      if (data.watchlist) {
+        setDreamteam(data.watchlist);
+      }
+      var rows = data.signals || [];
+      listCache[view] = rows;
+      return rows;
+    }).catch(function (err) {
+      if (err && (err.status === 401 || err.status === 403)) {
+        disablePaidLists();
+        return fetchWatchlistFallback();
+      }
+      throw err;
+    });
+  }
+
+  function rowPills(row) {
+    var s = String(row.signal || 'none').toLowerCase();
+    var html = '';
+    if (s === 'buy' || s === 'sell' || s === 'watch') {
+      html += '<span class="sig-pill ' + s + '">' + escapeHtml(s) + '</span>';
+    }
+    if (row.under_redline) {
+      html += '<span class="sig-pill under">UNDER</span>';
+    }
+    return html;
+  }
+
+  function emptyHtml() {
+    if (state.list === 'dreamteam') {
+      return '<p class="sig-chart-empty">No symbols in Dreamteam. Add them on the <a href="' + escapeHtml(dashUrl) + '">dashboard</a>.</p>';
+    }
+    return '<p class="sig-chart-empty">No signals today.</p>';
+  }
+
+  function highlightCurrent() {
+    if (!listEl) {
+      return;
+    }
+    var cur = String(state.symbol || '').toUpperCase();
+    listEl.querySelectorAll('[data-sym]').forEach(function (row) {
+      var on = row.getAttribute('data-sym') === cur;
+      row.classList.toggle('is-current', on);
+      row.setAttribute('aria-selected', on ? 'true' : 'false');
+      if (on && typeof row.scrollIntoView === 'function') {
+        try {
+          row.scrollIntoView({ block: 'nearest' });
+        } catch (err) {
+          row.scrollIntoView();
+        }
+      }
+    });
+  }
+
+  function renderList() {
+    if (!listEl) {
+      return;
+    }
+    var rows = state.rows || [];
+    if (!rows.length) {
+      listEl.innerHTML = emptyHtml();
+      return;
+    }
+    listEl.innerHTML = rows.map(function (row) {
+      var sym = String(row.symbol || '').toUpperCase();
+      var add = '';
+      if (state.list !== 'dreamteam') {
+        if (inDreamteam(sym)) {
+          add = '<span class="sig-chart-add-slot" aria-hidden="true"></span>';
+        } else {
+          add = '<button type="button" class="sig-add-row" data-add="' + escapeHtml(sym) + '">Add</button>';
+        }
+      }
+      return '<div class="sig-chart-row" role="option" data-sym="' + escapeHtml(sym) + '" aria-selected="false">' +
+        '<button type="button" class="sig-chart-row-main" data-open-sym="' + escapeHtml(sym) + '">' +
+        '<span class="sig-sym">' + escapeHtml(sym) + '</span>' +
+        '<span class="sig-chart-row-pills">' + rowPills(row) + '</span>' +
+        '</button>' + add +
+        '</div>';
+    }).join('');
+    highlightCurrent();
+  }
+
+  function syncListTabs() {
+    if (!page) {
+      return;
+    }
+    page.querySelectorAll('[data-paid-list]').forEach(function (btn) {
+      btn.hidden = !state.paidLists;
+    });
+    page.querySelectorAll('[data-list]').forEach(function (btn) {
+      var view = btn.getAttribute('data-list');
+      btn.classList.toggle('is-on', view === state.list);
+      btn.setAttribute('aria-selected', view === state.list ? 'true' : 'false');
+    });
+  }
+
+  function setList(view) {
+    if (!LIST_VIEWS[view]) {
+      view = 'dreamteam';
+    }
+    if (!state.paidLists) {
+      view = 'dreamteam';
+    }
+    state.list = view;
+    persistList(view);
+    syncListTabs();
+    return fetchList(view).then(function (rows) {
+      state.rows = rows || [];
+      renderList();
+      prefetchNeighbors();
+    }).catch(function () {
+      state.rows = [];
+      renderList();
+    });
+  }
+
+  function cycleList(dir) {
+    var rows = state.rows || [];
+    if (!rows.length) {
+      return;
+    }
+    var cur = String(state.symbol || '').toUpperCase();
+    var i = -1;
+    var n;
+    for (n = 0; n < rows.length; n++) {
+      if (String(rows[n].symbol || '').toUpperCase() === cur) {
+        i = n;
+        break;
+      }
+    }
+    var next;
+    if (i < 0) {
+      next = dir > 0 ? 0 : rows.length - 1;
+    } else {
+      next = (i + dir + rows.length) % rows.length;
+    }
+    assignSymbol(rows[next].symbol);
+  }
+
+  function isTypingTarget(target) {
+    if (!target) {
+      return false;
+    }
+    if (target.isContentEditable) {
+      return true;
+    }
+    var tag = (target.tagName || '').toLowerCase();
+    return tag === 'input' || tag === 'textarea' || tag === 'select';
   }
 
   if (title && state.symbol) {
@@ -377,13 +813,80 @@
 
   if (page) {
     page.addEventListener('click', function (ev) {
-      var btn = ev.target.closest('[data-mode]');
-      if (!btn) {
+      var modeBtn = ev.target.closest('[data-mode]');
+      if (modeBtn) {
+        setMode(modeBtn.getAttribute('data-mode'));
         return;
       }
-      setMode(btn.getAttribute('data-mode'));
+      var listBtn = ev.target.closest('[data-list]');
+      if (listBtn) {
+        setList(listBtn.getAttribute('data-list'));
+        return;
+      }
+      var addBtn = ev.target.closest('[data-add]');
+      if (addBtn) {
+        ev.preventDefault();
+        ev.stopPropagation();
+        var addSym = addBtn.getAttribute('data-add');
+        if (!addSym) {
+          return;
+        }
+        addBtn.disabled = true;
+        api('watchlist', {
+          method: 'POST',
+          body: JSON.stringify({ symbol: addSym })
+        }).then(function (data) {
+          setDreamteam(data.watchlist || []);
+          delete listCache.dreamteam;
+          renderList();
+        }).catch(function (e) {
+          addBtn.disabled = false;
+          setStatus(e.message || 'Could not add to Dreamteam.', true);
+        });
+        return;
+      }
+      var openBtn = ev.target.closest('[data-open-sym]');
+      if (openBtn) {
+        assignSymbol(openBtn.getAttribute('data-open-sym'));
+        return;
+      }
+      var row = ev.target.closest('[data-sym]');
+      if (row) {
+        assignSymbol(row.getAttribute('data-sym'));
+        return;
+      }
+      if (ev.target.closest('[data-drawer-open]')) {
+        openDrawer();
+        return;
+      }
+      if (ev.target.closest('[data-drawer-close]')) {
+        closeDrawer();
+      }
     });
   }
+
+  document.addEventListener('keydown', function (ev) {
+    if (isTypingTarget(ev.target)) {
+      return;
+    }
+    if (ev.metaKey || ev.ctrlKey || ev.altKey) {
+      return;
+    }
+    var key = ev.key;
+    if (key === 'Escape' && page && page.classList.contains('is-drawer-open')) {
+      closeDrawer();
+      return;
+    }
+    if (key === 'ArrowUp' || key === 'k' || key === 'K') {
+      ev.preventDefault();
+      cycleList(-1);
+      return;
+    }
+    if (key === 'ArrowDown' || key === 'j' || key === 'J') {
+      ev.preventDefault();
+      cycleList(1);
+    }
+  });
 
   document.addEventListener('sig-theme', function () {
     if (state.payload) {
@@ -393,6 +896,10 @@
 
   syncModeButtons();
   loadUniverse();
+  if (!state.paidLists) {
+    syncListTabs();
+  }
+  setList(savedList());
 
   if (!state.symbol) {
     setStatus('Pick a symbol to chart.');
@@ -402,7 +909,14 @@
 
   window.addEventListener('resize', function () {
     if (state.chart && el) {
-      state.chart.applyOptions({ width: el.clientWidth });
+      var h = el.clientHeight || 0;
+      if (h < 160) {
+        h = (window.matchMedia && window.matchMedia('(max-width: 720px)').matches) ? 360 : 680;
+      }
+      state.chart.applyOptions({ width: el.clientWidth, height: h });
+    }
+    if (window.innerWidth >= 720) {
+      closeDrawer();
     }
   });
 })();

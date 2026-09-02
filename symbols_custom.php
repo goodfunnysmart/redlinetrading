@@ -13,4 +13,6 @@ return [
     'VAS.AU',  // Swapped to .AU
     'VHY.AU',  // Swapped to .AU
     'STP.AU',
+    'GDX.AU',
+    'IOO.AU',
 ];

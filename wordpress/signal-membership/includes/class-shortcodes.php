@@ -220,6 +220,7 @@ class SIG_Shortcodes {
             'dashUrl'     => apply_filters('sig_dashboard_url', home_url('/?pagename=dashboard')),
             'profileUrl'  => apply_filters('sig_profile_url', home_url('/?pagename=profile')),
             'symbol'      => $symbol,
+            'isPaid'      => SIG_Access::current_is_paid(),
             'market'      => SIG_Cache::market_status(),
         );
     }
@@ -292,18 +293,20 @@ class SIG_Shortcodes {
     }
 
     public static function gate_html($message, $mode = 'login') {
-        $login = wp_login_url(get_permalink());
+        $login = SIG_Access::login_url(get_permalink());
         $register = SIG_Access::register_url();
         $paid = SIG_Access::paid_checkout_url();
         $html  = '<div class="sig-card sig-gate">';
         $html .= '<h2>' . esc_html($message) . '</h2>';
         $html .= '<div class="sig-gate-actions">';
         if (!is_user_logged_in()) {
-            $html .= '<a class="sig-btn" href="' . esc_url($login) . '">Log in</a>';
-            $html .= '<a class="sig-btn ghost" href="' . esc_url($register) . '">Register</a>';
+            $html .= '<a class="sig-btn ghost" href="' . esc_url($login) . '">Log in</a>';
         }
         $html .= '<a class="sig-btn" href="' . esc_url($paid) . '">Join Radar Member · $19/yr</a>';
         $html .= '</div>';
+        if (!is_user_logged_in()) {
+            $html .= '<p class="sig-gate-free"><a href="' . esc_url($register) . '">Create a free chart login</a></p>';
+        }
         $html .= '<p class="sig-legal">Free accounts can use charts. Radar Member ($19 AUD per year) unlocks the dashboard, Dreamteam and weekday email. General information only, not personal financial advice.</p>';
         $html .= '</div>';
         return $html;
