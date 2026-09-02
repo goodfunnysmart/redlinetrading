@@ -382,6 +382,7 @@ html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-moon { display: bloc
 .sig-add {
   display: flex;
   gap: 8px;
+  position: relative;
 }
 
 .sig-add-wrap {
@@ -393,7 +394,7 @@ html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-moon { display: bloc
   z-index: 30;
   left: 0;
   right: 0;
-  top: 44px;
+  top: 100%;
   margin: 0;
   padding: 4px 0;
   list-style: none;
@@ -411,7 +412,7 @@ html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-moon { display: bloc
   background: transparent;
   border: 0;
   color: var(--sig-text);
-  padding: 8px 12px;
+  padding: 10px 12px;
   font: 500 13px var(--sig-sans);
   cursor: pointer;
   height: auto;

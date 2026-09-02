@@ -34,9 +34,9 @@ if (!defined('ABSPATH')) {
     <form class="sig-add" data-add-form>
       <input type="text" name="symbol" placeholder="Add to Dreamteam e.g. BHP.AU" autocomplete="off" autocapitalize="off" spellcheck="false" />
       <button type="submit">Add</button>
+      <ul class="sig-suggest" data-suggest hidden></ul>
     </form>
-    <ul class="sig-suggest" data-suggest hidden></ul>
-    <p class="sig-note">ASX is .AU (BHP or BHP.AX is fine). US .US, Japan .T, crypto .CC. Not Yahoo .AX as a required suffix. Search by ticker or company name (e.g. NVIDIA).</p>
+    <p class="sig-note">Search ticker or name. ASX is .AU (BHP is fine).</p>
     </div>
     <label class="sig-filter-wrap"><span class="sig-filter-label">Filter</span>
       <input type="search" data-q placeholder="BHP, buy…" autocomplete="off" />
