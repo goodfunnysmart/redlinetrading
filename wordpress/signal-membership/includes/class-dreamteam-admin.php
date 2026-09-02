@@ -48,6 +48,7 @@ class SIG_Dreamteam_Admin {
         $url = add_query_arg(
             array(
                 'page'        => 'signal-membership',
+                'tab'         => 'advanced',
                 'sig_dt_add'  => $added,
                 'sig_dt_skip' => $skipped,
                 'sig_dt_bad'  => rawurlencode(implode(',', $unknown)),

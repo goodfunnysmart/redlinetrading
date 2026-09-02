@@ -597,7 +597,7 @@ class SIG_Writer {
         }
         check_admin_referer('sig_writer_batch');
         $result = self::run_batch(true);
-        $url = admin_url('options-general.php?page=signal-membership');
+        $url = admin_url('options-general.php?page=signal-membership&tab=writer');
         wp_safe_redirect(add_query_arg('sig_writer', !empty($result['ok']) ? 'batch' : 'fail', $url));
         exit;
     }
@@ -608,7 +608,7 @@ class SIG_Writer {
         }
         check_admin_referer('sig_writer_compare');
         self::compare_to_remote();
-        $url = admin_url('options-general.php?page=signal-membership');
+        $url = admin_url('options-general.php?page=signal-membership&tab=writer');
         wp_safe_redirect(add_query_arg('sig_writer', 'compare', $url));
         exit;
     }
@@ -624,7 +624,7 @@ class SIG_Writer {
             delete_option('sig_writer_finalized_ts');
         }
         self::log("Today's writer session reset (processed cleared).");
-        $url = admin_url('options-general.php?page=signal-membership');
+        $url = admin_url('options-general.php?page=signal-membership&tab=writer');
         wp_safe_redirect(add_query_arg('sig_writer', 'reset', $url));
         exit;
     }

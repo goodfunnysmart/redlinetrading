@@ -21,8 +21,13 @@ class SIG_Admin {
         );
     }
 
+    /**
+     * Separate option groups per tab so options.php only updates the
+     * fields on the submitted form. A Core save cannot blank the API key
+     * or uncheck Writer; other tabs never post sig_writer_enabled.
+     */
     public static function register() {
-        $opts = array(
+        $advanced = array(
             'sig_engine_db_host'     => 'localhost',
             'sig_engine_db_name'     => '',
             'sig_engine_db_user'     => '',
@@ -30,35 +35,83 @@ class SIG_Admin {
             'sig_pm_level'           => '1',
             'sig_free_level'         => '',
             'sig_cron_key'           => '',
-            'sig_from_email'         => '',
-            'sig_email_empty'        => 0,
         );
-        foreach ($opts as $key => $default) {
-            register_setting('sig_settings', $key);
+        foreach ($advanced as $key => $default) {
+            register_setting('sig_settings_advanced', $key);
         }
-        register_setting('sig_settings', 'sig_data_source', array(
+        register_setting('sig_settings_email', 'sig_from_email');
+        register_setting('sig_settings_email', 'sig_email_empty');
+        register_setting('sig_settings_writer', 'sig_data_source', array(
             'sanitize_callback' => array('SIG_Reads', 'sanitize_mode'),
             'default'           => 'remote',
         ));
-        register_setting('sig_settings', 'sig_writer_enabled', array(
+        register_setting('sig_settings_writer', 'sig_writer_enabled', array(
             'sanitize_callback' => 'intval',
             'default'           => 0,
         ));
-        register_setting('sig_settings', 'sig_eodhd_api_key_enc', array(
+        register_setting('sig_settings_writer', 'sig_eodhd_api_key_enc', array(
             'sanitize_callback' => array('SIG_EODHD', 'sanitize_posted_key'),
             'default'           => '',
         ));
-        register_setting('sig_settings', 'sig_core_symbols', array(
+        register_setting('sig_settings_core', 'sig_core_symbols', array(
             'sanitize_callback' => array('SIG_Universe', 'sanitize_option'),
             'default'           => array(),
         ));
+    }
+
+    public static function tabs() {
+        return array(
+            'writer'   => 'Writer',
+            'core'     => 'Core list',
+            'email'    => 'Email',
+            'advanced' => 'Advanced',
+        );
+    }
+
+    public static function current_tab() {
+        $tab = isset($_GET['tab']) ? sanitize_key(wp_unslash($_GET['tab'])) : 'writer';
+        $tabs = self::tabs();
+        return isset($tabs[$tab]) ? $tab : 'writer';
+    }
+
+    public static function page_url($tab = 'writer', $args = array()) {
+        $args['page'] = 'signal-membership';
+        $args['tab']  = $tab;
+        return add_query_arg($args, admin_url('options-general.php'));
     }
 
     public static function render() {
         if (!current_user_can('manage_options')) {
             return;
         }
-        echo '<div class="wrap"><h1>Signal Membership</h1>';
+        $tab = self::current_tab();
+        echo '<div class="wrap">';
+        echo '<h1>Signal Membership</h1>';
+        settings_errors();
+        self::render_notices();
+        self::render_tabs($tab);
+        if ($tab === 'core') {
+            self::render_core_tab();
+        } elseif ($tab === 'email') {
+            self::render_email_tab();
+        } elseif ($tab === 'advanced') {
+            self::render_advanced_tab();
+        } else {
+            self::render_writer_tab();
+        }
+        echo '</div>';
+    }
+
+    protected static function render_tabs($current) {
+        echo '<h2 class="nav-tab-wrapper">';
+        foreach (self::tabs() as $id => $label) {
+            $class = ($current === $id) ? 'nav-tab nav-tab-active' : 'nav-tab';
+            echo '<a href="' . esc_url(self::page_url($id)) . '" class="' . esc_attr($class) . '">' . esc_html($label) . '</a>';
+        }
+        echo '</h2>';
+    }
+
+    protected static function render_notices() {
         if (isset($_GET['sig_mail'])) {
             $flag = sanitize_key(wp_unslash($_GET['sig_mail']));
             if ($flag === 'preview') {
@@ -97,25 +150,12 @@ class SIG_Admin {
                 echo '<div class="notice notice-error"><p>Symbol list refresh failed. Check the writer log. The API key is never shown.</p></div>';
             }
         }
+    }
 
-        echo '<p>WordPress can fetch EODHD and write bars, but member pages and chart/dashboard REST never call EODHD. Data source defaults to <strong>remote</strong> so a deploy does not change what members see until you switch it.</p>';
+    protected static function render_writer_tab() {
+        echo '<p>Member pages and chart REST never call EODHD. Leave data source on remote until weekday runs look right.</p>';
         echo '<form method="post" action="options.php">';
-        settings_fields('sig_settings');
-        echo '<table class="form-table">';
-        self::row('sig_engine_db_host', 'Engine DB host', 'text');
-        self::row('sig_engine_db_name', 'Engine DB name', 'text');
-        self::row('sig_engine_db_user', 'Engine DB user (SELECT only)', 'text');
-        self::row('sig_engine_db_password', 'Engine DB password', 'password');
-        self::row('sig_pm_level', 'Paid level ID (Radar Member)', 'text');
-        self::row('sig_free_level', 'Free level ID', 'text');
-        self::row('sig_cron_key', 'Cron shared secret (X-Signals-Cron-Key)', 'text');
-        self::row('sig_from_email', 'From email (e.g. radar@greache.com)', 'email');
-        echo '<tr><th>Empty mail</th><td>';
-        echo '<label><input type="checkbox" name="sig_email_empty" value="1" ' . checked(1, (int) get_option('sig_email_empty'), false) . '> Send when there are no signals</label>';
-        echo '</td></tr>';
-        echo '</table>';
-
-        echo '<h2>EODHD writer (Stage 2)</h2>';
+        settings_fields('sig_settings_writer');
         echo '<table class="form-table">';
         $mode = SIG_Reads::mode();
         echo '<tr><th><label for="sig_data_source">Data source</label></th><td>';
@@ -128,7 +168,7 @@ class SIG_Admin {
             echo '<option value="' . esc_attr($val) . '" ' . selected($mode, $val, false) . '>' . esc_html($label) . '</option>';
         }
         echo '</select>';
-        echo '<p class="description">Leave on remote until you have checked a few weekday runs. local keeps CSV /redline/ fallback until the writer has 3 matching weekdays.</p>';
+        echo '<p class="description">local keeps CSV /redline/ fallback until the writer has 3 matching weekdays.</p>';
         echo '</td></tr>';
 
         echo '<tr><th>Writer</th><td>';
@@ -148,33 +188,42 @@ class SIG_Admin {
         }
         echo '</td></tr>';
         echo '</table>';
+        submit_button();
+        echo '</form>';
+        echo '<p class="description">cPanel already wakes WP-Cron every 15 minutes: <code>wget -q -O - "https://greache.com/redlinetrading/wp-cron.php?doing_wp_cron" &gt;/dev/null 2&gt;&amp;1</code> — after 17:30 Brisbane, <code>sig_writer_tick</code> finishes remaining core in one tick.</p>';
 
-        echo '<h2>Core symbols (always fetched)</h2>';
+        self::render_writer_status();
+    }
+
+    protected static function render_core_tab() {
+        echo '<form method="post" action="options.php">';
+        settings_fields('sig_settings_core');
         echo '<table class="form-table">';
         echo '<tr><th><label for="sig_core_symbols">Core symbols</label></th><td>';
         $core_list = class_exists('SIG_Universe') ? SIG_Universe::core() : array();
         echo '<textarea name="sig_core_symbols" id="sig_core_symbols" class="large-text code" rows="16" cols="50">';
         echo esc_textarea(implode("\n", $core_list));
         echo '</textarea>';
-        echo '<p class="description">One ticker per line (commas also fine). Nightly snapshot + BUY/SELL/WATCH email use this list. Member extras are separate (max 30). Empty save falls back to the plugin default &mdash; it does not wipe the universe to zero. XJO.INDX is not in this list; it is still always fetched for the badge. Saving here changes the list without a code deploy.</p>';
+        echo '<p class="description">One ticker per line (commas also fine). Snapshot and BUY/SELL/WATCH email use this list; member extras are separate (max 30). Empty save falls back to the plugin default &mdash; it does not wipe the universe to zero. XJO.INDX is not in this list; it is still always fetched for the badge.</p>';
         echo '<p class="description">Current count: <strong>' . esc_html((string) count($core_list)) . '</strong>.</p>';
         echo '</td></tr></table>';
+        submit_button();
+        echo '</form>';
+    }
 
+    protected static function render_email_tab() {
+        echo '<form method="post" action="options.php">';
+        settings_fields('sig_settings_email');
+        echo '<table class="form-table">';
+        self::row('sig_from_email', 'From email (e.g. radar@greache.com)', 'email');
+        echo '<tr><th>Empty mail</th><td>';
+        echo '<input type="hidden" name="sig_email_empty" value="0" />';
+        echo '<label><input type="checkbox" name="sig_email_empty" value="1" ' . checked(1, (int) get_option('sig_email_empty'), false) . '> Send when there are no signals</label>';
+        echo '</td></tr>';
+        echo '</table>';
         submit_button();
         echo '</form>';
 
-        self::render_writer_status();
-
-        echo '<hr><h2>Weekday radar email</h2>';
-        echo '<p>Paid members get Dreamteam + BUY / SELL / WATCH at 6:00pm Brisbane, once tonight\'s snapshot is in. Tickers link to the membership charts. The full universe is not included. Snapshot and those BUY/SELL/WATCH lists stay on the core 280.</p>';
-        echo '<p>WordPress events: <code>sig_email_send</code> at 6:00pm Brisbane daily, plus <code>sig_email_tick</code> every 15 minutes as a catch-up after 6pm. Writer event: <code>sig_writer_tick</code> on the same 15-minute schedule; after 17:30 Brisbane one tick finishes remaining core + extras. Both still need WP-Cron to be woken by a real cPanel cron hitting <code>wp-cron.php</code>.</p>';
-        echo '<p>cPanel cron (already in use for the 18:00 email), every 15 minutes: <code>wget -q -O - "https://greache.com/redlinetrading/wp-cron.php?doing_wp_cron" &gt;/dev/null 2&gt;&amp;1</code></p>';
-        echo '<p>Optional extra weekday line around 17:30 if you want a dedicated kick: <code>30 17 * * 1-5 wget -q -O - "https://greache.com/redlinetrading/wp-cron.php?doing_wp_cron" &gt;/dev/null 2&gt;&amp;1</code> — not required if */15 is already running.</p>';
-        echo '<div class="notice notice-warning inline"><p><strong>Do not double-send.</strong> Plugin Dreamteam is the only member email. Park the engine mailer To: <code>mail@greache.com</code> / Steve (comment it out or stop that cron) when you are ready — do not leave both firing. Leave the live /redline/ price cron running until you explicitly say to stop it. This screen does not edit the host.</p></div>';
-        $uid = SIG_Email::preview_user_id();
-        $dest = get_userdata($uid);
-        $to = ($dest && $dest->user_email) ? $dest->user_email : '';
-        echo '<p>Preview goes to <code>' . esc_html($to) . '</code> from <code>' . esc_html(SIG_Email::from_address()) . '</code>.</p>';
         echo '<form method="post" action="' . esc_url(admin_url('admin-post.php')) . '" style="display:inline-block;margin-right:8px;">';
         wp_nonce_field('sig_send_preview');
         echo '<input type="hidden" name="action" value="sig_send_preview" />';
@@ -186,14 +235,38 @@ class SIG_Admin {
         echo '<button class="button button-primary">Email all Radar Members now</button>';
         echo '</form>';
 
-        SIG_Dreamteam_Admin::notice();
-        SIG_Dreamteam_Admin::render();
+        echo '<div class="notice notice-warning inline"><p><strong>Do not double-send.</strong> Plugin Dreamteam is the only member email. Park the engine mailer To: <code>mail@greache.com</code> / Steve when you are ready. Leave the live /redline/ price cron running until you explicitly say to stop it.</p></div>';
+        $uid = SIG_Email::preview_user_id();
+        $dest = get_userdata($uid);
+        $to = ($dest && $dest->user_email) ? $dest->user_email : '';
+        echo '<p>Preview goes to <code>' . esc_html($to) . '</code> from <code>' . esc_html(SIG_Email::from_address()) . '</code>.</p>';
+        echo '<p>Paid members get Dreamteam + BUY / SELL / WATCH at 6:00pm Brisbane (<code>sig_email_send</code>), with <code>sig_email_tick</code> every 15 minutes as catch-up after 6pm. Same wget cron as the Writer tab.</p>';
+    }
+
+    protected static function render_advanced_tab() {
+        echo '<p class="description">Engine DB host/name/user/password are leftover for remote/shadow <code>/redline/</code> fallback. They are not used by the writer.</p>';
+        echo '<form method="post" action="options.php">';
+        settings_fields('sig_settings_advanced');
+        echo '<table class="form-table">';
+        self::row('sig_engine_db_host', 'Engine DB host', 'text');
+        self::row('sig_engine_db_name', 'Engine DB name', 'text');
+        self::row('sig_engine_db_user', 'Engine DB user (SELECT only)', 'text');
+        self::row('sig_engine_db_password', 'Engine DB password', 'password');
+        self::row('sig_pm_level', 'Paid level ID (Radar Member)', 'text');
+        self::row('sig_free_level', 'Free level ID', 'text');
+        self::row('sig_cron_key', 'Cron shared secret (X-Signals-Cron-Key)', 'text');
+        echo '</table>';
+        submit_button();
+        echo '</form>';
 
         echo '<hr><h2>Import radar stars</h2>';
         echo '<form method="post">';
         wp_nonce_field('sig_import_favorites');
         echo '<p><button class="button" type="submit" name="sig_import_favorites" value="1">Import favorites into my watchlist</button></p>';
-        echo '</form></div>';
+        echo '</form>';
+
+        SIG_Dreamteam_Admin::notice();
+        SIG_Dreamteam_Admin::render();
     }
 
     protected static function render_writer_status() {

@@ -237,7 +237,7 @@ class SIG_Symbol_Catalog {
         }
         check_admin_referer('sig_symbols_refresh');
         $result = self::maybe_refresh(true);
-        $url = admin_url('options-general.php?page=signal-membership');
+        $url = admin_url('options-general.php?page=signal-membership&tab=writer');
         wp_safe_redirect(add_query_arg('sig_writer', !empty($result['ok']) ? 'symbols' : 'symbols_fail', $url));
         exit;
     }

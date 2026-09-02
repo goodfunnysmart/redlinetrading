@@ -25,6 +25,7 @@ class SIG_Import_Favorites {
         $url = add_query_arg(
             array(
                 'page'         => 'signal-membership',
+                'tab'          => 'advanced',
                 'sig_imported' => (int) $result['added'],
                 'sig_skipped'  => (int) $result['skipped'],
             ),

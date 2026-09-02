@@ -401,7 +401,7 @@ class SIG_Email {
         check_admin_referer('sig_send_preview');
         $uid = self::preview_user_id();
         $result = self::fanout_internal(false, $uid);
-        $url = admin_url('options-general.php?page=signal-membership');
+        $url = admin_url('options-general.php?page=signal-membership&tab=email');
         if (is_wp_error($result)) {
             wp_safe_redirect(add_query_arg('sig_mail', 'err', $url));
             exit;
@@ -418,7 +418,7 @@ class SIG_Email {
         }
         check_admin_referer('sig_send_fanout');
         $result = self::fanout_internal(false);
-        $url = admin_url('options-general.php?page=signal-membership');
+        $url = admin_url('options-general.php?page=signal-membership&tab=email');
         if (is_wp_error($result)) {
             wp_safe_redirect(add_query_arg('sig_mail', 'err', $url));
             exit;
