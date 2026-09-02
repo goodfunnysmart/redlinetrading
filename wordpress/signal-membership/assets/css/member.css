@@ -227,10 +227,13 @@ body.sig-app .sig-topbar a.sig-btn.ghost:hover {
 }
 .sig-theme-icon svg {
   display: block;
+  width: 18px;
+  height: 18px;
 }
-.sig-icon-moon { display: none; }
-html.sig-html[data-theme="light"] .sig-icon-sun { display: none; }
-html.sig-html[data-theme="light"] .sig-icon-moon { display: block; }
+.sig-theme-icon .sig-icon-moon { display: none; }
+.sig-theme-icon .sig-icon-sun { display: block; }
+html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-sun { display: none; }
+html.sig-html[data-theme="light"] .sig-theme-icon .sig-icon-moon { display: block; }
 
 .sig-login-link {
   display: inline-flex;
@@ -290,8 +293,13 @@ html.sig-html[data-theme="light"] .sig-icon-moon { display: block; }
   background: var(--sig-card);
   border: 1px solid var(--sig-border-soft);
   border-radius: var(--sig-radius);
-  padding: 16px 18px;
+  padding: 16px 12px;
   box-shadow: var(--sig-shadow);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .sig-stat .n {
@@ -302,11 +310,13 @@ html.sig-html[data-theme="light"] .sig-icon-moon { display: block; }
 }
 
 .sig-stat .l {
-  color: var(--sig-muted);
-  font-size: 12px;
+  color: #c9d7ea;
+  font-size: 13px;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   margin-top: 4px;
+  text-align: center;
 }
 
 .sig-stat.is-buy .n { color: var(--sig-buy); }
@@ -691,11 +701,12 @@ body.sig-app a.sig-btn.ghost:focus-visible,
     line-height: 1.1;
   }
   .sig-stat .l {
-    font-size: 8px;
+    font-size: 11px;
     letter-spacing: 0.02em;
     margin-top: 2px;
     line-height: 1.15;
-    overflow-wrap: anywhere;
+    color: #d5e2f2;
+    white-space: nowrap;
   }
   .sig-stat.is-on {
     outline-width: 1px;
@@ -774,6 +785,20 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   .sig-toolbar,
   .sig-sizing {
     width: 100%;
+  }
+  .sig-sizing {
+    flex-wrap: nowrap;
+    gap: 8px;
+  }
+  .sig-cap-label input {
+    width: 72px;
+    height: 36px;
+    padding: 0 6px;
+    font-size: 13px;
+  }
+  .sig-size-meta {
+    white-space: nowrap;
+    font-size: 12px;
   }
   .sig-toolbar {
     display: grid;
@@ -984,7 +1009,7 @@ body.sig-app a.sig-btn.ghost:focus-visible,
   .sig-hero h1 { font-size: 22px; }
 }
 
-.sig-packs { display:flex; gap:8px; flex-wrap:wrap; width:100%; }
+.sig-packs { display: none; }
 .sig-pack {
   border: 1px dashed var(--sig-border);
   background: transparent;
@@ -1021,7 +1046,7 @@ button.sig-stat {
   appearance: none;
   font: inherit;
   color: inherit;
-  text-align: left;
+  text-align: center;
   width: 100%;
   cursor: pointer;
 }
@@ -1287,9 +1312,9 @@ button.sig-stat {
   border: 1px solid var(--sig-border);
   background: var(--sig-elev);
   color: var(--sig-text);
-  padding: 0 12px;
+  padding: 0 8px;
   font: 500 14px var(--sig-mono);
-  width: 140px;
+  width: 88px;
 }
 
 .sig-size-meta {

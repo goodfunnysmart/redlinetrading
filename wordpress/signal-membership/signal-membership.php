@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Signal Membership
  * Description: Per-member watchlists, dashboards, EMA ribbon charts, and nightly emails. Reads the Redline engine DB. Does not fetch prices.
- * Version: 1.4.20
+ * Version: 1.4.21
  * Author: Redline Trading
  * Requires at least: 6.4
  * Requires PHP: 7.4
@@ -16,7 +16,7 @@ if (!defined('ABSPATH')) {
 define('SIG_PLUGIN_FILE', __FILE__);
 define('SIG_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('SIG_PLUGIN_URL', plugin_dir_url(__FILE__));
-define('SIG_PLUGIN_VER', '1.4.20');
+define('SIG_PLUGIN_VER', '1.4.21');
 define('SIG_LWC_VERSION', '5.0.8');
 
 require_once SIG_PLUGIN_DIR . 'includes/class-db.php';
