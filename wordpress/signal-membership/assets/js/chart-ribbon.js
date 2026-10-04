@@ -664,8 +664,11 @@
     var html = '';
     if (s === 'buy' || s === 'sell' || s === 'watch') {
       html += '<span class="sig-pill ' + s + '">' + escapeHtml(s) + '</span>';
+    } else if (!row.under_redline) {
+      html += '<span class="sig-pill hold">hold</span>';
     }
-    if (row.under_redline) {
+    // SELL already means below EMA65 — skip UNDER.
+    if (row.under_redline && s !== 'sell') {
       html += '<span class="sig-pill under">UNDER</span>';
     }
     return html;

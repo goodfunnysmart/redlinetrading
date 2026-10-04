@@ -44,8 +44,8 @@ $badge = function ($sig, $under = false) {
         return $under ? ($main . ' ' . $under_html) : $main;
     }
     if ($sig === 'sell') {
-        $main = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;">SELL</span>';
-        return $under ? ($main . ' ' . $under_html) : $main;
+        // SELL already means below EMA65 — no UNDER pill.
+        return '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;">SELL</span>';
     }
     if ($sig === 'watch') {
         $main = '<span style="display:inline-block;padding:2px 8px;border-radius:999px;background:#f59e0b;color:#422006;font-size:10px;font-weight:700;letter-spacing:.06em;">WATCH</span>';

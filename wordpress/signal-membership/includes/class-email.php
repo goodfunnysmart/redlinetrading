@@ -175,11 +175,17 @@ class SIG_Email {
         foreach ($symbols as $sym) {
             $q = isset($quotes[$sym]) ? $quotes[$sym] : array();
             $sig = isset($idx[$sym]) ? $idx[$sym]['signal'] : 'none';
+            if (class_exists('SIG_Cache') && class_exists('SIG_Reads') && SIG_Reads::use_store_for_symbol($sym)) {
+                list($q, $sig) = SIG_Cache::fill_from_store($sym, $q, $sig);
+            }
             $price = null;
-            if (isset($q['close']) && $q['close'] !== '' && $q['close'] !== null) {
+            $quote_ok = !empty($q['as_of']) && (!SIG_Cache::latest_trade_date() || $q['as_of'] >= SIG_Cache::latest_trade_date());
+            if ($quote_ok && isset($q['close']) && $q['close'] !== '' && $q['close'] !== null) {
                 $price = (float) $q['close'];
             } elseif (isset($idx[$sym]['close']) && $idx[$sym]['close'] !== null) {
                 $price = (float) $idx[$sym]['close'];
+            } elseif (isset($q['close']) && $q['close'] !== '' && $q['close'] !== null) {
+                $price = (float) $q['close'];
             }
             $ema65 = isset($q['ema65']) ? (float) $q['ema65'] : 0;
             $ret = isset($q['ret_6m']) ? $q['ret_6m'] : null;
@@ -260,12 +266,18 @@ class SIG_Email {
         if ($minutes < (18 * 60)) {
             return;
         }
+        SIG_Cache::bust_price_caches();
         $date = SIG_Cache::latest_trade_date();
         if (!$date) {
             return;
         }
         $today = $now->format('Y-m-d');
         if ($date !== $today) {
+            return;
+        }
+        // Snapshot can flip to today before CSVs finish; wait until a core bar is tonight's close.
+        $probe = SIG_Cache::last_bar_date('BHP.AU');
+        if ($probe !== $today) {
             return;
         }
         if (get_option('sig_email_sent_for') === $date) {
@@ -292,6 +304,7 @@ class SIG_Email {
     }
 
     public static function fanout_internal($preview_only = false, $only_user_id = 0) {
+        SIG_Cache::bust_price_caches();
         $date = SIG_Cache::latest_trade_date();
         if (!$date) {
             $date = SIG_DB::latest_trade_date();

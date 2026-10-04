@@ -655,7 +655,8 @@ body.sig-app a.sig-btn.ghost:focus-visible,
 .sig-pill.buy { color: var(--sig-buy); background: var(--sig-buy-bg); }
 .sig-pill.sell { color: var(--sig-sell); background: var(--sig-sell-bg); }
 .sig-pill.watch { color: var(--sig-watch); background: var(--sig-watch-bg); }
-.sig-pill.none { color: var(--sig-none); background: rgba(100, 116, 139, 0.12); }
+.sig-pill.none,
+.sig-pill.hold { color: var(--sig-none); background: rgba(100, 116, 139, 0.12); }
 .sig-pill.under {
   color: #fecaca;
   background: rgba(159, 18, 57, 0.4);

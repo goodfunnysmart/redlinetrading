@@ -138,14 +138,15 @@
 
   function pill(signal, under) {
     var s = String(signal || 'none').toLowerCase();
-    var mark = under ? ' <span class="sig-pill under">UNDER</span>' : '';
+    // SELL already means below EMA65 — no extra UNDER pill.
+    var mark = (under && s !== 'sell') ? ' <span class="sig-pill under">UNDER</span>' : '';
     if (s === 'buy' || s === 'sell' || s === 'watch') {
       return '<span class="sig-pill ' + s + '">' + s + '</span>' + mark;
     }
     if (under) {
       return '<span class="sig-pill under">UNDER</span>';
     }
-    return '<span class="sig-pill none">none</span>';
+    return '<span class="sig-pill hold">hold</span>';
   }
 
   function applyMarket(m) {
